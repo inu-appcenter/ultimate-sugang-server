@@ -23,7 +23,8 @@ import static lombok.AccessLevel.PRIVATE;
 @Table(
         name = "members",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"email"})
+                @UniqueConstraint(columnNames = {"email"}),
+                @UniqueConstraint(columnNames = {"student_id"})
         }
 )
 public class Member {

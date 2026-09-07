@@ -15,6 +15,7 @@ import uss.code.auth.dto.request.LoginRequest;
 import uss.code.auth.dto.request.SignUpRequest;
 import uss.code.auth.dto.response.AuthTokenResponse;
 import uss.code.auth.dto.response.EmailAvailabilityResponse;
+import uss.code.auth.dto.response.StudentIdAvailabilityResponse;
 import uss.code.auth.service.AuthService;
 import uss.code.global.annotation.ParamValidation;
 
@@ -42,6 +43,14 @@ public class AuthController implements AuthControllerDocs {
             @RequestParam("email") final String email
     ){
         return ResponseEntity.ok(authService.checkEmailAvailability(email));
+    }
+
+    @GetMapping("/student-id-availability")
+    public ResponseEntity<StudentIdAvailabilityResponse> checkStudentIdAvailability(
+            @ParamValidation(maxLength = 20)
+            @RequestParam("student-id") final String studentId
+    ){
+        return ResponseEntity.ok(authService.checkStudentIdAvailability(studentId));
     }
 
     @PostMapping("/login")

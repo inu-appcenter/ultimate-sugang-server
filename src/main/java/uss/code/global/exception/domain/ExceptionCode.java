@@ -26,6 +26,7 @@ public enum ExceptionCode {
     PASSWORD_NOT_MATCH(UNAUTHORIZED, "MEM-002", "비밀번호가 일치하지 않아요."),
     EMAIL_ALREADY_EXISTS(CONFLICT, "MEM-003", "이미 사용 중인 이메일이에요."),
     COLLEGE_DEPARTMENT_MISMATCH(BAD_REQUEST, "MEM-004", "학과의 소속 단과대학과 일치하지 않아요."),
+    STUDENT_ID_ALREADY_EXISTS(CONFLICT, "MEM-005", "이미 사용 중인 학번이에요."),
 
     // 과목 (CRS)
     INVALID_GENERAL_EDUCATION_AREA(BAD_REQUEST, "CRS-001", "유효하지 않은 교양 영역이에요."),

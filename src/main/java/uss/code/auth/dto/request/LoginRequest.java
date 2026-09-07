@@ -1,18 +1,16 @@
 package uss.code.auth.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record LoginRequest(
         @Schema(
-                description = "이메일",
-                example = "student@inu.ac.kr"
+                description = "학번",
+                example = "202012345"
         )
-        @NotBlank(message = "이메일이 비어있습니다.")
-        @Email(message = "이메일 형식이 올바르지 않습니다.")
-        String email,
+        @NotBlank(message = "학번이 비어있습니다.")
+        String studentId,
 
         @Schema(
                 description = "비밀번호",

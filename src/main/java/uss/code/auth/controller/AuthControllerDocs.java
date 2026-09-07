@@ -19,6 +19,7 @@ import uss.code.auth.dto.request.LoginRequest;
 import uss.code.auth.dto.request.SignUpRequest;
 import uss.code.auth.dto.response.AuthTokenResponse;
 import uss.code.auth.dto.response.EmailAvailabilityResponse;
+import uss.code.auth.dto.response.StudentIdAvailabilityResponse;
 import uss.code.global.annotation.ParamValidation;
 import uss.code.global.exception.dto.response.ErrorResponse;
 
@@ -49,6 +50,10 @@ public interface AuthControllerDocs {
                                     @ExampleObject(
                                             name = "이메일 중복",
                                             value = "{\"code\" : \"MEM-003\", \"message\" : \"이미 사용 중인 이메일이에요.\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "학번 중복",
+                                            value = "{\"code\" : \"MEM-005\", \"message\" : \"이미 사용 중인 학번이에요.\"}"
                                     )
                             },
                             schema = @Schema(implementation = ErrorResponse.class))
@@ -68,7 +73,18 @@ public interface AuthControllerDocs {
             @RequestParam("email") final String email
     );
 
-    @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다.<br>" +
+    @Operation(summary = "학번 사용 가능 여부 조회", description = "학번이 이미 가입에 쓰이고 있는지 확인합니다.<br>" +
+            "🔓 <strong>Jwt 불필요</strong><br>")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "✅ 학번 사용 가능 여부 조회 성공")
+    })
+    @GetMapping("/student-id-availability")
+    ResponseEntity<StudentIdAvailabilityResponse> checkStudentIdAvailability(
+            @ParamValidation(maxLength = 20)
+            @RequestParam("student-id") final String studentId
+    );
+
+    @Operation(summary = "로그인", description = "학번과 비밀번호로 로그인합니다.<br>" +
             "🔓 <strong>Jwt 불필요</strong><br>")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "✅ 로그인 성공"),

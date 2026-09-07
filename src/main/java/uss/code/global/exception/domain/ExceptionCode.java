@@ -34,6 +34,7 @@ public enum ExceptionCode {
     COURSE_CLOSED(BAD_REQUEST, "CRS-004", "폐강된 과목이에요."),
     COURSE_SCHEDULE_CONFLICT(CONFLICT, "CRS-005", "과목 시간표가 겹쳐요."),
     COURSE_TYPE_LIMIT_EXCEEDED(BAD_REQUEST, "CRS-006", "해당 과목 유형의 등록 제한을 초과했어요."),
+    INVALID_GENERAL_EDUCATION_CLASSIFICATION(BAD_REQUEST, "CRS-007", "유효하지 않은 교양 이수구분이에요."),
 
     // 장바구니 (CART)
     CARTED_COURSE_NOT_FOUND(NOT_FOUND, "CART-001", "장바구니에 담은 과목을 찾을 수 없어요."),
@@ -47,6 +48,7 @@ public enum ExceptionCode {
     COURSE_ALREADY_REGISTERED(BAD_REQUEST, "REG-003", "이미 신청된 과목이에요."),
     REGISTERED_COURSE_NOT_FOUND(NOT_FOUND, "REG-004", "수강신청한 과목을 찾을 수 없어요."),
     REGISTRATION_CANCEL_CONFLICT(CONFLICT, "REG-005", "수강 취소를 반영할 수 없어요. 다시 확인해주세요."),
+    DUPLICATE_SUBJECT_REGISTERED(BAD_REQUEST, "REG-006", "이미 같은 과목명을 신청했어요."),
 
     // 관리자 (ADM)
     ADMIN_LOGIN_FAILED(UNAUTHORIZED, "ADM-001", "아이디나 비밀번호가 맞지 않아요."),

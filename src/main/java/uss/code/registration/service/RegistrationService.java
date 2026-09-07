@@ -12,6 +12,8 @@ import uss.code.member.repository.MemberRepository;
 import uss.code.registration.domain.Registration;
 import uss.code.registration.dto.response.RegistrationCourseResponse;
 import uss.code.registration.dto.response.RegistrationCoursesResponse;
+import uss.code.registration.dto.response.RegistrationResponse;
+import uss.code.registration.infra.RegistrationTypeResolver;
 import uss.code.registration.repository.RegistrationRepository;
 
 import java.util.List;
@@ -30,21 +32,24 @@ public class RegistrationService {
 
     @Transactional(readOnly = true)
     public RegistrationCoursesResponse getRegistrationCourse(final long memberId) {
-        List<Registration> registrations = registrationRepository.findByMemberId(memberId);
+        final Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RestApiException(MEMBER_NOT_FOUND));
 
-        List<Course> courses = registrations.stream()
-                .map(Registration::getCourse)
-                .toList();
+        final List<Registration> registrations = registrationRepository.findByMemberId(memberId);
 
-        List<RegistrationCourseResponse> registrationCourseResponses = courses.stream()
-                .map(RegistrationCourseResponse::from)
+        final List<RegistrationCourseResponse> registrationCourseResponses = registrations.stream()
+                .map(registration -> RegistrationCourseResponse.of(
+                        registration,
+                        member.getStudentId(),
+                        RegistrationTypeResolver.resolve(member, registration.getCourse())
+                ))
                 .toList();
 
         return RegistrationCoursesResponse.of(registrationCourseResponses);
     }
 
     @Transactional
-    public void registerCourse(
+    public RegistrationResponse registerCourse(
             final long memberId,
             final long courseId
     ) {
@@ -53,13 +58,14 @@ public class RegistrationService {
 
         final List<Registration> registrations = registrationRepository.findByMemberId(memberId);
 
-        Course course = courseRepository.findById(courseId)
+        final Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RestApiException(COURSE_NOT_FOUND));
 
         validateCourseActive(course);
         validateDuplicateCourse(registrations, courseId);
-        validateCreditLimit(registrations, member, course);
         validateCourseScheduleConflict(registrations, course);
+        validateDuplicateSubject(registrations, course);
+        validateCreditLimit(registrations, member, course);
         validateCourseTypeLimit(registrations, course);
 
         increaseEnrollment(courseId);
@@ -67,6 +73,8 @@ public class RegistrationService {
         final Registration registration = Registration.create(member, course);
 
         registrationRepository.save(registration);
+
+        return RegistrationResponse.from(course);
     }
 
     @Transactional
@@ -123,6 +131,18 @@ public class RegistrationService {
 
         if (exists) {
             throw new RestApiException(COURSE_ALREADY_REGISTERED);
+        }
+    }
+
+    private void validateDuplicateSubject(
+            final List<Registration> registrations,
+            final Course course
+    ) {
+        boolean exists = registrations.stream()
+                .anyMatch(registration -> registration.getCourse().getTitleKr().equals(course.getTitleKr()));
+
+        if (exists) {
+            throw new RestApiException(DUPLICATE_SUBJECT_REGISTERED);
         }
     }
 

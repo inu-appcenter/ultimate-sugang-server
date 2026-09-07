@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uss.code.cart.domain.Cart;
-import uss.code.cart.dto.response.CartedCourseResponse;
-import uss.code.cart.dto.response.CartedCoursesResponse;
 import uss.code.cart.repository.CartRepository;
 import uss.code.course.domain.Course;
+import uss.code.course.dto.response.CourseResponse;
+import uss.code.course.dto.response.CoursesResponse;
 import uss.code.course.infra.CourseValidator;
 import uss.code.course.repository.CourseRepository;
 import uss.code.global.exception.domain.RestApiException;
@@ -29,14 +29,14 @@ public class CartService {
     private final MemberRepository memberRepository;
 
     @Transactional(readOnly = true)
-    public CartedCoursesResponse getCartedCourse(final long memberId) {
+    public CoursesResponse getCartedCourse(final long memberId) {
         final List<Cart> carts = cartRepository.findByMemberId(memberId);
 
-        final List<CartedCourseResponse> cartedCourseResponses = carts.stream()
-                .map(cart -> CartedCourseResponse.of(cart.getCourse()))
+        final List<CourseResponse> courseResponses = carts.stream()
+                .map(cart -> CourseResponse.from(cart.getCourse()))
                 .toList();
 
-        return CartedCoursesResponse.of(cartedCourseResponses);
+        return CoursesResponse.of(courseResponses);
     }
 
     @Transactional

@@ -77,6 +77,8 @@ class MemberServiceTest {
             assertThat(response.department()).isEqualTo(EXPECTED_DEPARTMENT_NAME);
             assertThat(response.grade()).isEqualTo(EXPECTED_GRADE_NAME);
             assertThat(response.academicStatus()).isEqualTo(EXPECTED_ACADEMIC_STATUS_NAME);
+            assertThat(response.gpa()).isEqualTo(TEST_GPA);
+            assertThat(response.creditLimit()).isEqualTo(21);
         }
 
         @Test
@@ -182,6 +184,61 @@ class MemberServiceTest {
             assertThatThrownBy(() -> memberService.updateDepartment(invalidMemberId, request))
                     .isInstanceOf(RestApiException.class)
                     .hasFieldOrPropertyWithValue("exceptionCode", MEMBER_NOT_FOUND);
+        }
+    }
+
+    @Nested
+    class 최대_이수_학점_노출_테스트 {
+
+        private long createMemberWithGpa(final double gpa) {
+            final Member member = MemberFixture.createMember(
+                    "202012345",
+                    "홍길동",
+                    MemberCollege.INFORMATION_TECHNOLOGY,
+                    MemberDepartment.COMPUTER_ENGINEERING,
+                    MemberGrade.JUNIOR,
+                    AcademicStatus.ENROLLED,
+                    gpa
+            );
+            memberRepository.save(member);
+
+            return member.getId();
+        }
+
+        @Test
+        void 성적이_4점_이상이면_24학점이_내려간다() {
+            //given
+            final long memberId = createMemberWithGpa(4.2);
+
+            //when
+            final MemberProfileResponse response = memberService.getProfile(memberId);
+
+            //then
+            assertThat(response.creditLimit()).isEqualTo(24);
+        }
+
+        @Test
+        void 성적이_3점5_이상_4점_미만이면_21학점이_내려간다() {
+            //given
+            final long memberId = createMemberWithGpa(3.7);
+
+            //when
+            final MemberProfileResponse response = memberService.getProfile(memberId);
+
+            //then
+            assertThat(response.creditLimit()).isEqualTo(21);
+        }
+
+        @Test
+        void 성적이_3점5_미만이면_19학점이_내려간다() {
+            //given
+            final long memberId = createMemberWithGpa(3.0);
+
+            //when
+            final MemberProfileResponse response = memberService.getProfile(memberId);
+
+            //then
+            assertThat(response.creditLimit()).isEqualTo(19);
         }
     }
 }

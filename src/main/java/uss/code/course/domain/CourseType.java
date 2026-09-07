@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import uss.code.global.exception.domain.RestApiException;
 
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Set;
 
 import static uss.code.global.exception.domain.ExceptionCode.INVALID_ENUM_TYPE;
 
@@ -32,8 +34,17 @@ public enum CourseType {
     RISE_WITH_SCHEDULE("21", "RISE(시간표 있음)"),
     SELF_DESIGNED_SEMINAR("17", "자기설계세미나");
 
+    private static final Set<CourseType> TAG_TYPES = EnumSet.of(
+            E_LEARNING, E_LEARNING_HUSS, ONLINE_BLENDED, ONLINE_BLENDED_HUSS
+    );
+
     private final String code;
     private final String name;
+
+    public static boolean isTagType(final String typeCode) {
+        return TAG_TYPES.stream()
+                .anyMatch(type -> type.code.equals(typeCode));
+    }
 
     public static CourseType fromCode(final String code) {
         return Arrays.stream(values())

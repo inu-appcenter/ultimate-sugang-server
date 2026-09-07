@@ -21,7 +21,7 @@ class CourseScheduleFormatterTest {
     class 시간표_문자열_조립_테스트 {
 
         @Test
-        void 시간표가_없으면_하이픈을_반환한다() {
+        void 시간표가_없으면_빈_문자열을_반환한다() {
             //given
             final Course course = CourseFixture.createCourse();
 
@@ -29,11 +29,11 @@ class CourseScheduleFormatterTest {
             final String schedule = CourseScheduleFormatter.format(course.getSchedules());
 
             //then
-            assertThat(schedule).isEqualTo("-");
+            assertThat(schedule).isEmpty();
         }
 
         @Test
-        void 강의실이_하나면_교시를_쉼표로_잇는다() {
+        void 요일이_다르면_묶음을_공백으로_잇는다() {
             //given
             final Course course = CourseFixture.createCourse();
             course.addCourseSchedule(CourseScheduleFixture.createCourseSchedule(
@@ -49,7 +49,7 @@ class CourseScheduleFormatterTest {
             final String schedule = CourseScheduleFormatter.format(course.getSchedules());
 
             //then
-            assertThat(schedule).isEqualTo("[07-407:화(1-2A),목(2B-3)]");
+            assertThat(schedule).isEqualTo("화 1-2A (07-407) 목 2B-3 (07-407)");
         }
 
         @Test
@@ -69,11 +69,11 @@ class CourseScheduleFormatterTest {
             final String schedule = CourseScheduleFormatter.format(course.getSchedules());
 
             //then
-            assertThat(schedule).isEqualTo("[05-506:월(5B-6)][05-507:수(5B-6)]");
+            assertThat(schedule).isEqualTo("월 5B-6 (05-506) 수 5B-6 (05-507)");
         }
 
         @Test
-        void 떨어져_있는_같은_강의실은_한_묶음으로_합친다() {
+        void 강의실이_섞여도_요일_순서대로_이어_붙인다() {
             //given
             final Course course = CourseFixture.createCourse();
             course.addCourseSchedule(CourseScheduleFixture.createCourseSchedule(
@@ -93,7 +93,7 @@ class CourseScheduleFormatterTest {
             final String schedule = CourseScheduleFormatter.format(course.getSchedules());
 
             //then
-            assertThat(schedule).isEqualTo("[15-113:월(1-2A),수(7-8A)][가상건물-200:화(4-5A)]");
+            assertThat(schedule).isEqualTo("월 1-2A (15-113) 화 4-5A (가상건물-200) 수 7-8A (15-113)");
         }
 
         @Test
@@ -117,11 +117,11 @@ class CourseScheduleFormatterTest {
             final String schedule = CourseScheduleFormatter.format(course.getSchedules());
 
             //then
-            assertThat(schedule).isEqualTo("[07-407:월(1),수(2),금(3)]");
+            assertThat(schedule).isEqualTo("월 1 (07-407) 수 2 (07-407) 금 3 (07-407)");
         }
 
         @Test
-        void 같은_요일이면_시작_시각_순으로_정렬한다() {
+        void 같은_요일_같은_강의실이면_교시를_한_묶음으로_잇는다() {
             //given
             final Course course = CourseFixture.createCourse();
             course.addCourseSchedule(CourseScheduleFixture.createCourseSchedule(
@@ -137,7 +137,7 @@ class CourseScheduleFormatterTest {
             final String schedule = CourseScheduleFormatter.format(course.getSchedules());
 
             //then
-            assertThat(schedule).isEqualTo("[08-201:월(5),월(6)]");
+            assertThat(schedule).isEqualTo("월 5 6 (08-201)");
         }
 
         @Test
@@ -153,7 +153,7 @@ class CourseScheduleFormatterTest {
             final String schedule = CourseScheduleFormatter.format(course.getSchedules());
 
             //then
-            assertThat(schedule).isEqualTo("[07-407:월(야1-2A)]");
+            assertThat(schedule).isEqualTo("월 야1-2A (07-407)");
         }
     }
 

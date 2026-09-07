@@ -70,8 +70,11 @@ effort: xhigh
 ## Phase 5: 테스트 실행
 
 1. 테스트를 Bash로 실행하라 (H2):
-   - 인자가 비어 있으면 전체 실행: `./gradlew test`
+   - 인자가 비어 있으면 전체 실행. 명령은 `.claude/CLAUDE.md`의 **macOS에서 테스트 전체 실행**을 그대로 쓴다.
+     인자 없는 `./gradlew test`를 쓰지 마라 - macOS에서 한글 `@Nested` 클래스를 로드하지 못해 완주하지 않는다
    - 인자가 있으면 해당 클래스/메서드만 실행: `./gradlew test --tests "{패키지}.{테스트클래스명}"`
+   - `@MySqlIntegrationTest` 클래스는 Docker가 꺼져 있으면 조용히 skip된다.
+     결과를 보고하기 전에 skip 수를 확인하고, 이번에 작성한 테스트가 skip됐으면 Docker를 켜고 다시 실행하라
 2. 모두 통과하면 Phase 6으로 이동하라
 3. 실패한 테스트가 있으면 원인을 분석하라:
    - 실패 로그에서 실패한 테스트 클래스와 메서드명(`클래스명#메서드명`)을 추출하라

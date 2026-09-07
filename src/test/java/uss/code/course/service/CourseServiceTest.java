@@ -18,17 +18,15 @@ import uss.code.course.dto.response.CourseCategoriesResponse;
 import uss.code.course.dto.response.CourseCategoryResponse;
 import uss.code.course.dto.response.CourseTermResponse;
 import uss.code.course.dto.response.CourseTermsResponse;
-import uss.code.course.dto.response.GeneralEducationCourseResponse;
-import uss.code.course.dto.response.GeneralEducationCoursesResponse;
-import uss.code.course.dto.response.InterdisciplinaryMajorCourseResponse;
-import uss.code.course.dto.response.InterdisciplinaryMajorCoursesResponse;
+import uss.code.course.dto.response.DepartmentResponse;
+import uss.code.course.dto.response.DepartmentsResponse;
 import uss.code.course.dto.response.InterdisciplinaryMajorResponse;
 import uss.code.course.dto.response.InterdisciplinaryMajorsResponse;
-import uss.code.course.dto.response.MajorCourseResponse;
-import uss.code.course.dto.response.MajorCoursesResponse;
 import uss.code.course.fixture.CourseFixture;
 import uss.code.course.fixture.CourseScheduleFixture;
 import uss.code.course.repository.CourseRepository;
+import uss.code.course.dto.response.CourseResponse;
+import uss.code.course.dto.response.CoursesResponse;
 import uss.code.global.exception.domain.RestApiException;
 import uss.code.global.infra.IntegrationTest;
 import uss.code.member.domain.AcademicStatus;
@@ -151,12 +149,12 @@ class CourseServiceTest {
             //given
 
             //when
-            final MajorCoursesResponse response = courseService.getMajorCourses(validMemberId);
+            final CoursesResponse response = courseService.getMajorCourses(validMemberId);
 
             //then
-            assertThat(response.majorCourseResponses()).hasSize(6);
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::department)
+            assertThat(response.courseResponses()).hasSize(6);
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::department)
                     .containsOnly("컴퓨터공학부");
         }
 
@@ -165,9 +163,9 @@ class CourseServiceTest {
             //given
 
             //when
-            final MajorCoursesResponse response = courseService.getMajorCourses(validMemberId);
-            final List<String> grades = response.majorCourseResponses().stream()
-                    .map(MajorCourseResponse::grade)
+            final CoursesResponse response = courseService.getMajorCourses(validMemberId);
+            final List<String> grades = response.courseResponses().stream()
+                    .map(CourseResponse::grade)
                     .toList();
 
             //then
@@ -183,22 +181,22 @@ class CourseServiceTest {
             //given
 
             //when
-            final MajorCoursesResponse response = courseService.getMajorCourses(validMemberId);
+            final CoursesResponse response = courseService.getMajorCourses(validMemberId);
 
             //then
             // COM001: [07-401:월(1-2A),수(1-2A)]
-            final MajorCourseResponse allGrade1 = response.majorCourseResponses().stream()
+            final CourseResponse allGrade1 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("COM001"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(allGrade1.schedule()).isEqualTo("[07-401:월(1-2A),수(1-2A)]");
+            assertThat(allGrade1.schedule()).isEqualTo("월 1-2A (07-401) 수 1-2A (07-401)");
 
             // COM101: [07-401:화(1-2A)]
-            final MajorCourseResponse freshman1 = response.majorCourseResponses().stream()
+            final CourseResponse freshman1 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("COM101"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(freshman1.schedule()).isEqualTo("[07-401:화(1-2A)]");
+            assertThat(freshman1.schedule()).isEqualTo("화 1-2A (07-401)");
         }
 
         @Test
@@ -206,11 +204,11 @@ class CourseServiceTest {
             //given
 
             //when
-            final MajorCoursesResponse response = courseService.getMajorCourses(validMemberId);
+            final CoursesResponse response = courseService.getMajorCourses(validMemberId);
 
             //then
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::courseCode)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
                     .doesNotContain("MATH101");
         }
 
@@ -300,11 +298,11 @@ class CourseServiceTest {
             //given
 
             //when
-            final MajorCoursesResponse response = courseService.getMajorCourses(electronicsMemberId);
+            final CoursesResponse response = courseService.getMajorCourses(electronicsMemberId);
 
             //then
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::courseCode)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
                     .containsExactlyInAnyOrder("ELE101", "ELE201", "ELE202", "ELE401");
         }
 
@@ -313,11 +311,11 @@ class CourseServiceTest {
             //given
 
             //when
-            final MajorCoursesResponse response = courseService.getMajorCourses(electronicsMemberId);
+            final CoursesResponse response = courseService.getMajorCourses(electronicsMemberId);
 
             //then
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::department)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::department)
                     .contains("전자공학과");
         }
 
@@ -326,11 +324,11 @@ class CourseServiceTest {
             //given
 
             //when
-            final MajorCoursesResponse response = courseService.getMajorCourses(electronicsMemberId);
+            final CoursesResponse response = courseService.getMajorCourses(electronicsMemberId);
 
             //then
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::courseCode)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
                     .doesNotContain("LIF101");
         }
 
@@ -339,10 +337,10 @@ class CourseServiceTest {
             //given
 
             //when
-            final MajorCoursesResponse response = courseService.getMajorCourses(liberalArtsMemberId);
+            final CoursesResponse response = courseService.getMajorCourses(liberalArtsMemberId);
 
             //then
-            assertThat(response.majorCourseResponses()).isEmpty();
+            assertThat(response.courseResponses()).isEmpty();
         }
 
         @Test
@@ -351,11 +349,11 @@ class CourseServiceTest {
             final String department = "ELECTRONICS_ENGINEERING_SCHOOL";
 
             //when
-            final MajorCoursesResponse response = courseService.getOtherDepartmentCourses(department);
+            final CoursesResponse response = courseService.getOtherDepartmentCourses(department);
 
             //then
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::courseCode)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
                     .containsExactlyInAnyOrder("ELE101", "ELE201", "ELE202", "ELE401");
         }
 
@@ -364,9 +362,9 @@ class CourseServiceTest {
             //given
 
             //when
-            final MajorCoursesResponse response = courseService.getMajorCourses(electronicsMemberId);
-            final List<String> grades = response.majorCourseResponses().stream()
-                    .map(MajorCourseResponse::grade)
+            final CoursesResponse response = courseService.getMajorCourses(electronicsMemberId);
+            final List<String> grades = response.courseResponses().stream()
+                    .map(CourseResponse::grade)
                     .toList();
 
             //then
@@ -450,123 +448,214 @@ class CourseServiceTest {
             coreHumanities1.addCourseSchedule(schedule2);
             coreForeignLanguage1.addCourseSchedule(schedule3);
 
+            // 교직 과목 1개
+            Course teaching = CourseFixture.createCourse(
+                    "교육학개론", "Introduction to Education", "TEA101", "TEA101001",
+                    CourseCollege.TEACHING, CourseDepartment.TEACHING,
+                    CourseClassification.TEACHING, CourseArea.TEACHING,
+                    CourseType.LECTURE,
+                    CourseGrade.ALL,
+                    2, false, 30, 10
+            );
+
+            // 일반선택 과목 1개
+            Course generalElective = CourseFixture.createCourse(
+                    "자기설계세미나", "Self Designed Seminar", "GEL101", "GEL101001",
+                    CourseCollege.GENERAL_ELECTIVE, CourseDepartment.GENERAL_ELECTIVE,
+                    CourseClassification.GENERAL_ELECTIVE, CourseArea.GENERAL_ELECTIVE,
+                    CourseType.LECTURE,
+                    CourseGrade.ALL,
+                    1, false, 30, 10
+            );
+
             courseRepository.saveAll(List.of(
                     coreHumanities1, coreHumanities2,
                     coreForeignLanguage1, coreForeignLanguage2,
                     social,
+                    teaching, generalElective,
                     majorCourse
             ));
         }
 
         @Test
-        void 핵심_인문_영역으로_조회하면_해당_영역의_과목만_반환된다() {
+        void 이수영역까지_넘기면_해당_영역의_과목만_반환된다() {
             //given
-            final String courseArea = "CORE_HUMANITIES";
+            final String classificationCode = CourseClassification.CORE_LIBERAL_ARTS.getCode();
+            final String areaCode = CourseArea.CORE_HUMANITIES.getCode();
 
             //when
-            final GeneralEducationCoursesResponse response = courseService.getGeneralEducationCourses(courseArea);
+            final CoursesResponse response = courseService.getGeneralEducationCourses(classificationCode, areaCode);
 
             //then
-            assertThat(response.generalEducationCourseResponses()).hasSize(2);
-            assertThat(response.generalEducationCourseResponses())
-                    .extracting(GeneralEducationCourseResponse::area)
+            assertThat(response.courseResponses()).hasSize(2);
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseArea)
                     .containsOnly("(핵심)인문");
         }
 
         @Test
-        void 핵심_외국어_영역으로_조회하면_해당_영역의_과목만_반환된다() {
+        void 이수구분만_넘기면_하위_이수영역_전체가_반환된다() {
             //given
-            final String courseArea = "CORE_FOREIGN_LANGUAGE";
+            final String classificationCode = CourseClassification.CORE_LIBERAL_ARTS.getCode();
 
             //when
-            final GeneralEducationCoursesResponse response = courseService.getGeneralEducationCourses(courseArea);
+            final CoursesResponse response = courseService.getGeneralEducationCourses(classificationCode, null);
 
             //then
-            assertThat(response.generalEducationCourseResponses()).hasSize(2);
-            assertThat(response.generalEducationCourseResponses())
-                    .extracting(GeneralEducationCourseResponse::area)
-                    .containsOnly("(핵심)외국어");
+            assertThat(response.courseResponses()).hasSize(4);
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseArea)
+                    .containsOnly("(핵심)인문", "(핵심)외국어");
         }
 
         @Test
-        void 일반_사회_영역으로_조회하면_해당_영역의_과목만_반환된다() {
+        void 심화교양_사회_영역으로_조회하면_해당_영역의_과목만_반환된다() {
             //given
-            final String courseArea = "SOCIAL";
+            final String classificationCode = CourseClassification.ADVANCED_LIBERAL_ARTS.getCode();
+            final String areaCode = CourseArea.SOCIAL.getCode();
 
             //when
-            final GeneralEducationCoursesResponse response = courseService.getGeneralEducationCourses(courseArea);
+            final CoursesResponse response = courseService.getGeneralEducationCourses(classificationCode, areaCode);
 
             //then
-            assertThat(response.generalEducationCourseResponses()).hasSize(1);
-            assertThat(response.generalEducationCourseResponses())
-                    .extracting(GeneralEducationCourseResponse::area)
+            assertThat(response.courseResponses()).hasSize(1);
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseArea)
                     .containsOnly("사회");
+        }
+
+        @Test
+        void 교직으로_조회하면_교직_과목이_반환된다() {
+            //given
+            final String classificationCode = CourseClassification.TEACHING.getCode();
+
+            //when
+            final CoursesResponse response = courseService.getGeneralEducationCourses(classificationCode, null);
+
+            //then
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
+                    .containsExactly("TEA101");
+        }
+
+        @Test
+        void 일반선택으로_조회하면_일반선택_과목이_반환된다() {
+            //given
+            final String classificationCode = CourseClassification.GENERAL_ELECTIVE.getCode();
+
+            //when
+            final CoursesResponse response = courseService.getGeneralEducationCourses(classificationCode, null);
+
+            //then
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
+                    .containsExactly("GEL101");
+        }
+
+        @Test
+        void 교양이_아닌_과목의_이수영역은_빈_문자열로_반환된다() {
+            //given
+            final String classificationCode = CourseClassification.TEACHING.getCode();
+
+            //when
+            final CoursesResponse response = courseService.getGeneralEducationCourses(classificationCode, null);
+
+            //then
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseArea)
+                    .containsOnly("");
         }
 
         @Test
         void 스케줄이_있는_교양_과목은_요일순으로_정렬되어_반환된다() {
             //given
-            final String courseArea = "CORE_HUMANITIES";
+            final String classificationCode = CourseClassification.CORE_LIBERAL_ARTS.getCode();
+            final String areaCode = CourseArea.CORE_HUMANITIES.getCode();
 
             //when
-            final GeneralEducationCoursesResponse response = courseService.getGeneralEducationCourses(courseArea);
+            final CoursesResponse response = courseService.getGeneralEducationCourses(classificationCode, areaCode);
 
             //then
-            final GeneralEducationCourseResponse coreHumanities1 = response.generalEducationCourseResponses().stream()
+            final CourseResponse coreHumanities1 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("GEN101"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(coreHumanities1.schedule()).isEqualTo("[07-401:월(1-2A),수(1-2A)]");
+            assertThat(coreHumanities1.schedule()).isEqualTo("월 1-2A (07-401) 수 1-2A (07-401)");
         }
 
         @Test
-        void 스케줄이_없는_교양_과목은_하이픈으로_반환된다() {
+        void 스케줄이_없는_교양_과목은_빈_문자열로_반환된다() {
             //given
-            final String courseArea = "CORE_HUMANITIES";
+            final String classificationCode = CourseClassification.CORE_LIBERAL_ARTS.getCode();
+            final String areaCode = CourseArea.CORE_HUMANITIES.getCode();
 
             //when
-            final GeneralEducationCoursesResponse response = courseService.getGeneralEducationCourses(courseArea);
+            final CoursesResponse response = courseService.getGeneralEducationCourses(classificationCode, areaCode);
 
             //then
-            final GeneralEducationCourseResponse coreHumanities2 = response.generalEducationCourseResponses().stream()
+            final CourseResponse coreHumanities2 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("GEN102"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(coreHumanities2.schedule()).isEqualTo("-");
+            assertThat(coreHumanities2.schedule()).isEmpty();
         }
 
         @Test
         void 전공_과목은_교양_조회시_포함되지_않는다() {
             //given
-            final String courseArea = "CORE_HUMANITIES";
+            final String classificationCode = CourseClassification.CORE_LIBERAL_ARTS.getCode();
 
             //when
-            final GeneralEducationCoursesResponse response = courseService.getGeneralEducationCourses(courseArea);
+            final CoursesResponse response = courseService.getGeneralEducationCourses(classificationCode, null);
 
             //then
-            assertThat(response.generalEducationCourseResponses())
-                    .extracting(GeneralEducationCourseResponse::courseCode)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
                     .doesNotContain("COM101");
         }
 
         @Test
-        void 잘못된_교양_영역으로_조회하면_예외가_발생한다() {
+        void 전공_이수구분으로_조회하면_예외가_발생한다() {
             //given
-            final String invalidCourseArea = "INVALID_AREA";
+            final String majorClassificationCode = CourseClassification.MAJOR_CORE.getCode();
 
             //when & then
-            assertThatThrownBy(() -> courseService.getGeneralEducationCourses(invalidCourseArea))
+            assertThatThrownBy(() -> courseService.getGeneralEducationCourses(majorClassificationCode, null))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", INVALID_GENERAL_EDUCATION_CLASSIFICATION);
+        }
+
+        @Test
+        void 존재하지_않는_이수구분_코드로_조회하면_예외가_발생한다() {
+            //given
+            final String invalidClassificationCode = "99";
+
+            //when & then
+            assertThatThrownBy(() -> courseService.getGeneralEducationCourses(invalidClassificationCode, null))
                     .isInstanceOf(RestApiException.class)
                     .hasFieldOrPropertyWithValue("exceptionCode", INVALID_ENUM_TYPE);
         }
 
         @Test
-        void 전공_영역으로_조회하면_예외가_발생한다() {
+        void 이수구분에_속하지_않는_이수영역으로_조회하면_예외가_발생한다() {
             //given
-            final String majorCourseArea = "MAJOR_CORE";
+            final String classificationCode = CourseClassification.CORE_LIBERAL_ARTS.getCode();
+            final String otherAreaCode = CourseArea.SOCIAL.getCode();
 
             //when & then
-            assertThatThrownBy(() -> courseService.getGeneralEducationCourses(majorCourseArea))
+            assertThatThrownBy(() -> courseService.getGeneralEducationCourses(classificationCode, otherAreaCode))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", INVALID_GENERAL_EDUCATION_AREA);
+        }
+
+        @Test
+        void 존재하지_않는_이수영역_코드로_조회하면_예외가_발생한다() {
+            //given
+            final String classificationCode = CourseClassification.CORE_LIBERAL_ARTS.getCode();
+            final String invalidAreaCode = "999";
+
+            //when & then
+            assertThatThrownBy(() -> courseService.getGeneralEducationCourses(classificationCode, invalidAreaCode))
                     .isInstanceOf(RestApiException.class)
                     .hasFieldOrPropertyWithValue("exceptionCode", INVALID_GENERAL_EDUCATION_AREA);
         }
@@ -649,12 +738,12 @@ class CourseServiceTest {
             final String department = "MATHEMATICS";
 
             //when
-            final MajorCoursesResponse response = courseService.getOtherDepartmentCourses(department);
+            final CoursesResponse response = courseService.getOtherDepartmentCourses(department);
 
             //then
-            assertThat(response.majorCourseResponses()).hasSize(6);
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::department)
+            assertThat(response.courseResponses()).hasSize(6);
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::department)
                     .containsOnly("수학과");
         }
 
@@ -664,9 +753,9 @@ class CourseServiceTest {
             final String department = "MATHEMATICS";
 
             //when
-            final MajorCoursesResponse response = courseService.getOtherDepartmentCourses(department);
-            final List<String> grades = response.majorCourseResponses().stream()
-                    .map(MajorCourseResponse::grade)
+            final CoursesResponse response = courseService.getOtherDepartmentCourses(department);
+            final List<String> grades = response.courseResponses().stream()
+                    .map(CourseResponse::grade)
                     .toList();
 
             //then
@@ -683,22 +772,22 @@ class CourseServiceTest {
             final String department = "MATHEMATICS";
 
             //when
-            final MajorCoursesResponse response = courseService.getOtherDepartmentCourses(department);
+            final CoursesResponse response = courseService.getOtherDepartmentCourses(department);
 
             //then
             // MATH101: [07-401:월(1-2A),수(1-2A)]
-            final MajorCourseResponse mathAllGrade1 = response.majorCourseResponses().stream()
+            final CourseResponse mathAllGrade1 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("MATH101"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(mathAllGrade1.schedule()).isEqualTo("[07-401:월(1-2A),수(1-2A)]");
+            assertThat(mathAllGrade1.schedule()).isEqualTo("월 1-2A (07-401) 수 1-2A (07-401)");
 
             // MATH201: [07-401:화(1-2A)]
-            final MajorCourseResponse mathFreshman1 = response.majorCourseResponses().stream()
+            final CourseResponse mathFreshman1 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("MATH201"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(mathFreshman1.schedule()).isEqualTo("[07-401:화(1-2A)]");
+            assertThat(mathFreshman1.schedule()).isEqualTo("화 1-2A (07-401)");
         }
 
         @Test
@@ -707,11 +796,11 @@ class CourseServiceTest {
             final String department = "MATHEMATICS";
 
             //when
-            final MajorCoursesResponse response = courseService.getOtherDepartmentCourses(department);
+            final CoursesResponse response = courseService.getOtherDepartmentCourses(department);
 
             //then
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::courseCode)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
                     .doesNotContain("CSE101");
         }
 
@@ -824,12 +913,12 @@ class CourseServiceTest {
             final String department = "SOCIAL_DATA_SCIENCE";
 
             //when
-            final InterdisciplinaryMajorCoursesResponse response = courseService.getInterdisciplinaryMajorCourses(department);
+            final CoursesResponse response = courseService.getInterdisciplinaryMajorCourses(department);
 
             //then
-            assertThat(response.interdisciplinaryMajorCourseResponses()).hasSize(6);
-            assertThat(response.interdisciplinaryMajorCourseResponses())
-                    .extracting(InterdisciplinaryMajorCourseResponse::courseCode)
+            assertThat(response.courseResponses()).hasSize(6);
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
                     .containsExactlyInAnyOrder("SDS101", "SDS102", "SDS201", "SDS202", "SDS301", "SDS302");
         }
 
@@ -839,9 +928,9 @@ class CourseServiceTest {
             final String department = "SOCIAL_DATA_SCIENCE";
 
             //when
-            final InterdisciplinaryMajorCoursesResponse response = courseService.getInterdisciplinaryMajorCourses(department);
-            final List<String> grades = response.interdisciplinaryMajorCourseResponses().stream()
-                    .map(InterdisciplinaryMajorCourseResponse::grade)
+            final CoursesResponse response = courseService.getInterdisciplinaryMajorCourses(department);
+            final List<String> grades = response.courseResponses().stream()
+                    .map(CourseResponse::grade)
                     .toList();
 
             //then
@@ -858,38 +947,38 @@ class CourseServiceTest {
             final String department = "SOCIAL_DATA_SCIENCE";
 
             //when
-            final InterdisciplinaryMajorCoursesResponse response = courseService.getInterdisciplinaryMajorCourses(department);
+            final CoursesResponse response = courseService.getInterdisciplinaryMajorCourses(department);
 
             //then
             // SDS101: [07-401:월(1-2A),수(1-2A)]
-            final InterdisciplinaryMajorCourseResponse allGrade1 = response.interdisciplinaryMajorCourseResponses().stream()
+            final CourseResponse allGrade1 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("SDS101"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(allGrade1.schedule()).isEqualTo("[07-401:월(1-2A),수(1-2A)]");
+            assertThat(allGrade1.schedule()).isEqualTo("월 1-2A (07-401) 수 1-2A (07-401)");
 
             // SDS201: [07-401:화(1-2A)]
-            final InterdisciplinaryMajorCourseResponse freshman1 = response.interdisciplinaryMajorCourseResponses().stream()
+            final CourseResponse freshman1 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("SDS201"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(freshman1.schedule()).isEqualTo("[07-401:화(1-2A)]");
+            assertThat(freshman1.schedule()).isEqualTo("화 1-2A (07-401)");
         }
 
         @Test
-        void 스케줄이_없는_과목은_하이픈으로_반환된다() {
+        void 스케줄이_없는_과목은_빈_문자열로_반환된다() {
             //given
             final String department = "SOCIAL_DATA_SCIENCE";
 
             //when
-            final InterdisciplinaryMajorCoursesResponse response = courseService.getInterdisciplinaryMajorCourses(department);
+            final CoursesResponse response = courseService.getInterdisciplinaryMajorCourses(department);
 
             //then
-            final InterdisciplinaryMajorCourseResponse allGrade2 = response.interdisciplinaryMajorCourseResponses().stream()
+            final CourseResponse allGrade2 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("SDS102"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(allGrade2.schedule()).isEqualTo("-");
+            assertThat(allGrade2.schedule()).isEmpty();
         }
 
         @Test
@@ -898,11 +987,11 @@ class CourseServiceTest {
             final String department = "SOCIAL_DATA_SCIENCE";
 
             //when
-            final InterdisciplinaryMajorCoursesResponse response = courseService.getInterdisciplinaryMajorCourses(department);
+            final CoursesResponse response = courseService.getInterdisciplinaryMajorCourses(department);
 
             //then
-            assertThat(response.interdisciplinaryMajorCourseResponses())
-                    .extracting(InterdisciplinaryMajorCourseResponse::courseCode)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
                     .doesNotContain("FA101");
         }
 
@@ -912,11 +1001,11 @@ class CourseServiceTest {
             final String department = "SOCIAL_DATA_SCIENCE";
 
             //when
-            final InterdisciplinaryMajorCoursesResponse response = courseService.getInterdisciplinaryMajorCourses(department);
+            final CoursesResponse response = courseService.getInterdisciplinaryMajorCourses(department);
 
             //then
-            assertThat(response.interdisciplinaryMajorCourseResponses())
-                    .extracting(InterdisciplinaryMajorCourseResponse::courseCode)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
                     .doesNotContain("CSE101");
         }
 
@@ -1005,12 +1094,12 @@ class CourseServiceTest {
 //            final String keyword = "알고리즘";
 //
 //            //when
-//            final SearchedCoursesResponse response = courseService.searchCourses(keyword);
+//            final CoursesResponse response = courseService.searchCourses(keyword);
 //
 //            //then
-//            assertThat(response.searchedCourseResponses()).hasSize(2);
-//            assertThat(response.searchedCourseResponses())
-//                    .extracting(SearchedCourseResponse::titleKr)
+//            assertThat(response.courseResponses()).hasSize(2);
+//            assertThat(response.courseResponses())
+//                    .extracting(CourseResponse::name)
 //                    .containsExactlyInAnyOrder("알고리즘", "알고리즘설계");
 //        }
 //
@@ -1020,12 +1109,12 @@ class CourseServiceTest {
 //            final String keyword = "Data";
 //
 //            //when
-//            final SearchedCoursesResponse response = courseService.searchCourses(keyword);
+//            final CoursesResponse response = courseService.searchCourses(keyword);
 //
 //            //then
-//            assertThat(response.searchedCourseResponses()).hasSize(3);
-//            assertThat(response.searchedCourseResponses())
-//                    .extracting(SearchedCourseResponse::titleEn)
+//            assertThat(response.courseResponses()).hasSize(3);
+//            assertThat(response.courseResponses())
+//                    .extracting(CourseResponse::nameEn)
 //                    .containsExactlyInAnyOrder("Data Structure", "Data Analysis", "Big Data Analysis");
 //        }
 //
@@ -1035,12 +1124,12 @@ class CourseServiceTest {
 //            final String keyword = "CSE";
 //
 //            //when
-//            final SearchedCoursesResponse response = courseService.searchCourses(keyword);
+//            final CoursesResponse response = courseService.searchCourses(keyword);
 //
 //            //then
-//            assertThat(response.searchedCourseResponses()).hasSize(3);
-//            assertThat(response.searchedCourseResponses())
-//                    .extracting(SearchedCourseResponse::courseCode)
+//            assertThat(response.courseResponses()).hasSize(3);
+//            assertThat(response.courseResponses())
+//                    .extracting(CourseResponse::courseCode)
 //                    .containsExactlyInAnyOrder("CSE101", "CSE201", "CSE202");
 //        }
 //
@@ -1050,12 +1139,12 @@ class CourseServiceTest {
 //            final String keyword = "101";
 //
 //            //when
-//            final SearchedCoursesResponse response = courseService.searchCourses(keyword);
+//            final CoursesResponse response = courseService.searchCourses(keyword);
 //
 //            //then
-//            assertThat(response.searchedCourseResponses()).hasSize(3);
-//            assertThat(response.searchedCourseResponses())
-//                    .extracting(SearchedCourseResponse::courseCode)
+//            assertThat(response.courseResponses()).hasSize(3);
+//            assertThat(response.courseResponses())
+//                    .extracting(CourseResponse::courseCode)
 //                    .containsExactlyInAnyOrder("CSE101", "MATH101", "SDS101");
 //        }
 //
@@ -1065,12 +1154,12 @@ class CourseServiceTest {
 //            final String keyword = "Data";
 //
 //            //when
-//            final SearchedCoursesResponse response = courseService.searchCourses(keyword);
+//            final CoursesResponse response = courseService.searchCourses(keyword);
 //
 //            //then
 //            // "빅데이터분석" 과목은 국문 과목명과 영문 과목명 모두에 "Data"를 포함하지만 한 번만 조회
-//            assertThat(response.searchedCourseResponses()).hasSize(3);
-//            final long sdsCount = response.searchedCourseResponses().stream()
+//            assertThat(response.courseResponses()).hasSize(3);
+//            final long sdsCount = response.courseResponses().stream()
 //                    .filter(c -> c.courseCode().equals("SDS101"))
 //                    .count();
 //            assertThat(sdsCount).isEqualTo(1);
@@ -1082,10 +1171,10 @@ class CourseServiceTest {
 //            final String keyword = "존재하지않는과목";
 //
 //            //when
-//            final SearchedCoursesResponse response = courseService.searchCourses(keyword);
+//            final CoursesResponse response = courseService.searchCourses(keyword);
 //
 //            //then
-//            assertThat(response.searchedCourseResponses()).isEmpty();
+//            assertThat(response.courseResponses()).isEmpty();
 //        }
 //
 //        @Test
@@ -1094,38 +1183,38 @@ class CourseServiceTest {
 //            final String keyword = "CSE";
 //
 //            //when
-//            final SearchedCoursesResponse response = courseService.searchCourses(keyword);
+//            final CoursesResponse response = courseService.searchCourses(keyword);
 //
 //            //then
 //            // CSE101: [07-401:월(1-2A),수(1-2A)]
-//            final SearchedCourseResponse cse101 = response.searchedCourseResponses().stream()
+//            final CourseResponse cse101 = response.courseResponses().stream()
 //                    .filter(c -> c.courseCode().equals("CSE101"))
 //                    .findFirst()
 //                    .orElseThrow();
-//            assertThat(cse101.schedule()).isEqualTo("[07-401:월(1-2A),수(1-2A)]");
+//            assertThat(cse101.schedule()).isEqualTo("월 1-2A (07-401) 수 1-2A (07-401)");
 //
 //            // CSE201: [07-401:화(1-2A)]
-//            final SearchedCourseResponse cse201 = response.searchedCourseResponses().stream()
+//            final CourseResponse cse201 = response.courseResponses().stream()
 //                    .filter(c -> c.courseCode().equals("CSE201"))
 //                    .findFirst()
 //                    .orElseThrow();
-//            assertThat(cse201.schedule()).isEqualTo("[07-401:화(1-2A)]");
+//            assertThat(cse201.schedule()).isEqualTo("화 1-2A (07-401)");
 //        }
 //
 //        @Test
-//        void 스케줄이_없는_과목은_하이픈으로_반환된다() {
+//        void 스케줄이_없는_과목은_빈_문자열로_반환된다() {
 //            //given
 //            final String keyword = "알고리즘설계";
 //
 //            //when
-//            final SearchedCoursesResponse response = courseService.searchCourses(keyword);
+//            final CoursesResponse response = courseService.searchCourses(keyword);
 //
 //            //then
-//            final SearchedCourseResponse cse202 = response.searchedCourseResponses().stream()
+//            final CourseResponse cse202 = response.courseResponses().stream()
 //                    .filter(c -> c.courseCode().equals("CSE202"))
 //                    .findFirst()
 //                    .orElseThrow();
-//            assertThat(cse202.schedule()).isEqualTo("-");
+//            assertThat(cse202.schedule()).isEmpty();
 //        }
 //
 //        @Test
@@ -1134,10 +1223,10 @@ class CourseServiceTest {
 //            final String keyword = "알고리즘설계";
 //
 //            //when
-//            final SearchedCoursesResponse response = courseService.searchCourses(keyword);
+//            final CoursesResponse response = courseService.searchCourses(keyword);
 //
 //            //then
-//            final SearchedCourseResponse cse202 = response.searchedCourseResponses().stream()
+//            final CourseResponse cse202 = response.courseResponses().stream()
 //                    .filter(c -> c.courseCode().equals("CSE202"))
 //                    .findFirst()
 //                    .orElseThrow();
@@ -1151,11 +1240,11 @@ class CourseServiceTest {
 //            final String keyword = "101";
 //
 //            //when
-//            final SearchedCoursesResponse response = courseService.searchCourses(keyword);
+//            final CoursesResponse response = courseService.searchCourses(keyword);
 //
 //            //then
-//            assertThat(response.searchedCourseResponses())
-//                    .extracting(SearchedCourseResponse::department)
+//            assertThat(response.courseResponses())
+//                    .extracting(CourseResponse::department)
 //                    .containsExactlyInAnyOrder("컴퓨터공학부", "수학과", "소셜데이터사이언스연계전공");
 //        }
 //
@@ -1165,10 +1254,10 @@ class CourseServiceTest {
 //            final String keywordLower = "data";
 //
 //            //when
-//            final SearchedCoursesResponse response = courseService.searchCourses(keywordLower);
+//            final CoursesResponse response = courseService.searchCourses(keywordLower);
 //
 //            //then
-//            assertThat(response.searchedCourseResponses()).hasSize(3);
+//            assertThat(response.courseResponses()).hasSize(3);
 //        }
 //    }
 
@@ -1191,13 +1280,13 @@ class CourseServiceTest {
             //given
 
             //when
-            final MajorCoursesResponse response = courseService.getOtherDepartmentCourses(
+            final CoursesResponse response = courseService.getOtherDepartmentCourses(
                     CourseDepartment.COMPUTER_ENGINEERING.name()
             );
 
             //then
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::haksuCode)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::code)
                     .containsExactly("SORT001", "SORT002", "SORT003", "SORT004");
         }
     }
@@ -1214,20 +1303,20 @@ class CourseServiceTest {
         }
 
         @Test
-        void 원어강의일_때만_원어강의명이_내려간다() {
+        void 원어강의가_아니면_원어강의명은_빈_문자열로_내려간다() {
             //given
 
             //when
-            final MajorCoursesResponse response = courseService.getOtherDepartmentCourses(
+            final CoursesResponse response = courseService.getOtherDepartmentCourses(
                     CourseDepartment.COMPUTER_ENGINEERING.name()
             );
 
             //then
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::haksuCode, MajorCourseResponse::englishCourseName)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::code, CourseResponse::englishCourseName)
                     .containsExactlyInAnyOrder(
                             tuple("ENG001001", "원어강의(EN)"),
-                            tuple("KOR001001", null)
+                            tuple("KOR001001", "")
                     );
         }
     }
@@ -1260,15 +1349,12 @@ class CourseServiceTest {
             //given
 
             //when
-            final MajorCoursesResponse response = courseService.getHussCourses();
+            final CoursesResponse response = courseService.getHussCourses();
 
             //then
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::haksuCode, MajorCourseResponse::isHussCourse)
-                    .containsExactlyInAnyOrder(
-                            tuple("HUSS001001", true),
-                            tuple("HUSS002001", true)
-                    );
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::code)
+                    .containsExactlyInAnyOrder("HUSS001001", "HUSS002001");
         }
     }
 
@@ -1477,24 +1563,24 @@ class CourseServiceTest {
         @Test
         void 전공_조회에서_폐강_강의가_빠진다() {
             //when
-            final MajorCoursesResponse response = courseService.getMajorCourses(memberId);
+            final CoursesResponse response = courseService.getMajorCourses(memberId);
 
             //then
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::titleKr)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::name)
                     .containsExactly("개설과목");
         }
 
         @Test
         void 타학과_조회에서_폐강_강의가_빠진다() {
             //when
-            final MajorCoursesResponse response = courseService.getOtherDepartmentCourses(
+            final CoursesResponse response = courseService.getOtherDepartmentCourses(
                     CourseDepartment.COMPUTER_ENGINEERING.name()
             );
 
             //then
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::titleKr)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::name)
                     .containsExactly("개설과목");
         }
 
@@ -1513,11 +1599,11 @@ class CourseServiceTest {
             courseRepository.saveAll(List.of(activeHuss, closedHuss));
 
             //when
-            final MajorCoursesResponse response = courseService.getHussCourses();
+            final CoursesResponse response = courseService.getHussCourses();
 
             //then
-            assertThat(response.majorCourseResponses())
-                    .extracting(MajorCourseResponse::titleKr)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::name)
                     .containsExactly("HUSS개설");
         }
 
@@ -1548,13 +1634,14 @@ class CourseServiceTest {
             courseRepository.saveAll(List.of(activeGeneral, closedGeneral));
 
             //when
-            final GeneralEducationCoursesResponse response = courseService.getGeneralEducationCourses(
-                    CourseArea.CORE_HUMANITIES.name()
+            final CoursesResponse response = courseService.getGeneralEducationCourses(
+                    CourseClassification.CORE_LIBERAL_ARTS.getCode(),
+                    CourseArea.CORE_HUMANITIES.getCode()
             );
 
             //then
-            assertThat(response.generalEducationCourseResponses())
-                    .extracting(GeneralEducationCourseResponse::titleKr)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::name)
                     .containsExactly("교양개설");
         }
 
@@ -1568,4 +1655,70 @@ class CourseServiceTest {
         }
     }
 
+    @Nested
+    class 학과_목록_조회_테스트 {
+
+        @BeforeEach
+        void setUp() {
+            final Course computerCourse = CourseFixture.createCourseWithDepartmentAndDetails(
+                    "자료구조", "Data Structure", "COM101", "COM101001",
+                    CourseDepartment.COMPUTER_ENGINEERING, CourseGrade.SOPHOMORE
+            );
+            final Course businessCourse = CourseFixture.createCourseWithDepartmentAndDetails(
+                    "경영학원론", "Business", "BUS101", "BUS101001",
+                    CourseDepartment.BUSINESS_ADMINISTRATION, CourseGrade.FRESHMAN
+            );
+            final Course generalEducationCourse = CourseFixture.createCourse(
+                    "글쓰기", "Writing", "GEN101", "GEN101001",
+                    CourseCollege.GENERAL_EDUCATION, CourseDepartment.GENERAL_EDUCATION,
+                    CourseClassification.CORE_LIBERAL_ARTS, CourseArea.CORE_HUMANITIES,
+                    CourseType.LECTURE, CourseGrade.ALL,
+                    3, false, 50, 0
+            );
+
+            courseRepository.saveAll(List.of(computerCourse, businessCourse, generalEducationCourse));
+        }
+
+        @Test
+        void 과목이_적재된_학과만_반환된다() {
+            //given
+
+            //when
+            final DepartmentsResponse response = courseService.getDepartments();
+
+            //then
+            assertThat(response.departmentResponses())
+                    .extracting(DepartmentResponse::code)
+                    .containsExactlyInAnyOrder(
+                            MemberDepartment.COMPUTER_ENGINEERING.name(),
+                            MemberDepartment.BUSINESS_ADMINISTRATION.name()
+                    );
+        }
+
+        @Test
+        void 학과_코드와_이름이_함께_반환된다() {
+            //given
+
+            //when
+            final DepartmentsResponse response = courseService.getDepartments();
+
+            //then
+            assertThat(response.departmentResponses())
+                    .extracting(DepartmentResponse::name)
+                    .contains("컴퓨터공학부", "경영학부");
+        }
+
+        @Test
+        void 학생_소속이_아닌_교양은_학과_목록에_없다() {
+            //given
+
+            //when
+            final DepartmentsResponse response = courseService.getDepartments();
+
+            //then
+            assertThat(response.departmentResponses())
+                    .extracting(DepartmentResponse::name)
+                    .doesNotContain("교양", "일선", "교직", "군사학");
+        }
+    }
 }

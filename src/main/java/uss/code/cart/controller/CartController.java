@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uss.code.auth.annotation.Auth;
-import uss.code.cart.dto.response.CartedCoursesResponse;
 import uss.code.cart.service.CartService;
+import uss.code.course.dto.response.CoursesResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +20,7 @@ public class CartController implements CartControllerDocs {
     private final CartService cartService;
 
     @GetMapping
-    public ResponseEntity<CartedCoursesResponse> getCartedCourse(@Auth final long memberId){
+    public ResponseEntity<CoursesResponse> getCartedCourse(@Auth final long memberId){
         return ResponseEntity.ok(cartService.getCartedCourse(memberId));
     }
 

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uss.code.auth.annotation.Auth;
 import uss.code.registration.dto.response.RegistrationCoursesResponse;
+import uss.code.registration.dto.response.RegistrationResponse;
 import uss.code.registration.service.RegistrationService;
 
 @RestController
@@ -25,12 +26,11 @@ public class RegistrationController implements RegistrationControllerDocs {
     }
 
     @PostMapping("/{courseId}")
-    public ResponseEntity<Void> registerCourse(
+    public ResponseEntity<RegistrationResponse> registerCourse(
             @Auth final long memberId,
             @PathVariable("courseId") final long courseId
     ){
-        registrationService.registerCourse(memberId, courseId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(registrationService.registerCourse(memberId, courseId));
     }
 
     @DeleteMapping("/{courseId}")

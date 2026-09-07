@@ -306,14 +306,14 @@ class RegistrationServiceTest {
         }
 
         @Test
-        void 이미_신청한_과목을_다시_신청하면_예외가_발생한다() {
+        void 이미_신청한_과목을_다시_신청하면_시간표_중복으로_막힌다() {
             //given
             registrationService.registerCourse(testMemberId, course1Id);
 
             //when & then
             assertThatThrownBy(() -> registrationService.registerCourse(testMemberId, course1Id))
                     .isInstanceOf(RestApiException.class)
-                    .hasFieldOrPropertyWithValue("exceptionCode", COURSE_ALREADY_REGISTERED);
+                    .hasFieldOrPropertyWithValue("exceptionCode", COURSE_SCHEDULE_CONFLICT);
         }
 
         @Test
@@ -1202,6 +1202,60 @@ class RegistrationServiceTest {
                     .filter(registration -> registration.courseResponse().courseCode().equals(courseCode))
                     .findFirst()
                     .orElseThrow();
+        }
+    }
+
+    @Nested
+    class 같은_강의_재신청_판정_테스트 {
+
+        private Long testMemberId;
+        private Long scheduledCourseId;
+        private Long onlineCourseId;
+
+        @BeforeEach
+        void setUp() {
+            final Member testMember = MemberFixture.createMember();
+            memberRepository.save(testMember);
+            testMemberId = testMember.getId();
+
+            final Course scheduled = CourseFixture.createCourseWithDetails(
+                    "자료구조", "Data Structure", "CSE101", "CSE101001",
+                    CourseGrade.SOPHOMORE
+            );
+            scheduled.addCourseSchedule(CourseScheduleFixture.createCourseSchedule(
+                    scheduled, CourseDay.MONDAY, LocalTime.of(13, 0), LocalTime.of(15, 0)
+            ));
+
+            final Course online = CourseFixture.createCourseWithDetails(
+                    "온라인특강", "Online Lecture", "CSE900", "CSE900001",
+                    CourseGrade.SOPHOMORE
+            );
+
+            courseRepository.saveAll(List.of(scheduled, online));
+            scheduledCourseId = scheduled.getId();
+            onlineCourseId = online.getId();
+        }
+
+        @Test
+        void 시간표가_있는_강의를_다시_신청하면_시간표_중복으로_잡힌다() {
+            //given
+            registrationService.registerCourse(testMemberId, scheduledCourseId);
+
+            //when & then
+            assertThatThrownBy(() -> registrationService.registerCourse(testMemberId, scheduledCourseId))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", COURSE_SCHEDULE_CONFLICT);
+        }
+
+        @Test
+        void 시간표가_없는_강의를_다시_신청하면_동일_과목명으로_잡힌다() {
+            //given
+            registrationService.registerCourse(testMemberId, onlineCourseId);
+
+            //when & then
+            assertThatThrownBy(() -> registrationService.registerCourse(testMemberId, onlineCourseId))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", DUPLICATE_SUBJECT_REGISTERED);
         }
     }
 }

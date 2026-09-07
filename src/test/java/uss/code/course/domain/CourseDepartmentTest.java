@@ -10,6 +10,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uss.code.global.exception.domain.ExceptionCode.INVALID_DEPARTMENT;
 import static uss.code.global.exception.domain.ExceptionCode.INVALID_ENUM_TYPE;
 import static uss.code.global.exception.domain.ExceptionCode.INVALID_INTERDISCIPLINARY_DEPARTMENT;
 
@@ -220,6 +221,120 @@ class CourseDepartmentTest {
             assertThatThrownBy(() -> CourseDepartment.fromInterdisciplinary(department))
                     .isInstanceOf(RestApiException.class)
                     .hasFieldOrPropertyWithValue("exceptionCode", INVALID_ENUM_TYPE);
+        }
+    }
+
+    @Nested
+    class 학과_판정_테스트 {
+
+        @Test
+        void 학과_갈래는_실측_드롭다운과_같은_76건이다() {
+            //when
+            final List<CourseDepartment> departments = CourseDepartment.departmentValues();
+
+            //then
+            assertThat(departments).hasSize(76);
+        }
+
+        @Test
+        void 연계전공_갈래는_실측_드롭다운과_같은_32건이다() {
+            //when
+            final List<CourseDepartment> interdisciplinary = CourseDepartment.interdisciplinaryValues();
+
+            //then
+            assertThat(interdisciplinary).hasSize(32);
+        }
+
+        @Test
+        void 학과면_그대로_반환한다() {
+            //given
+            final String department = "COMPUTER_ENGINEERING";
+
+            //when
+            final CourseDepartment courseDepartment = CourseDepartment.fromDepartment(department);
+
+            //then
+            assertThat(courseDepartment).isEqualTo(CourseDepartment.COMPUTER_ENGINEERING);
+        }
+
+        @Test
+        void HUSS_두_건은_연계전공이_아니라_학과다() {
+            //when & then
+            assertThat(CourseDepartment.fromDepartment("HUSS_OTHER_UNIVERSITY"))
+                    .isEqualTo(CourseDepartment.HUSS_OTHER_UNIVERSITY);
+            assertThat(CourseDepartment.fromDepartment("HUSS_INCLUSIVE_SOCIETY_INITIATIVE"))
+                    .isEqualTo(CourseDepartment.HUSS_INCLUSIVE_SOCIETY_INITIATIVE);
+        }
+
+        @Test
+        void 연계전공을_넘기면_예외가_발생한다() {
+            //given
+            final String interdisciplinary = "LOGISTICS";
+
+            //when & then
+            assertThatThrownBy(() -> CourseDepartment.fromDepartment(interdisciplinary))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", INVALID_DEPARTMENT);
+        }
+
+        @Test
+        void 교양처럼_학과가_아닌_값을_넘기면_예외가_발생한다() {
+            //given
+            final String generalEducation = "GENERAL_EDUCATION";
+
+            //when & then
+            assertThatThrownBy(() -> CourseDepartment.fromDepartment(generalEducation))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", INVALID_DEPARTMENT);
+        }
+
+        @Test
+        void 폐지된_학과는_목록에_없지만_소속_매핑에는_남는다() {
+            //when & then
+            assertThat(CourseDepartment.departmentValues()).doesNotContain(CourseDepartment.TRADE);
+            assertThat(CourseDepartment.ownedBy(MemberDepartment.GLOBAL_TRADE_SERVICE))
+                    .contains(CourseDepartment.TRADE);
+        }
+    }
+
+    @Nested
+    class 실측_표기_일치_테스트 {
+
+        @Test
+        void 쉼표가_들어간_연계전공은_쉼표를_그대로_담는다() {
+            //when & then
+            assertThat(CourseDepartment.MICE_SPORTS_TOURISM.getName()).isEqualTo("MICE,스포츠및관광연계전공");
+            assertThat(CourseDepartment.CLIMATE_ENERGY_ENVIRONMENT.getName()).isEqualTo("기후,에너지및환경연계전공");
+        }
+
+        @Test
+        void 연계전공의_가운뎃점은_U00B7이다() {
+            //given
+            final String middleDot = "\u00B7";
+            final String hangulLetterAraea = "\u318D";
+
+            //when & then
+            assertThat(CourseDepartment.BIO_CONVERGENCE_STARTUP.getName())
+                    .isEqualTo("바이오융합" + middleDot + "창업연계전공")
+                    .doesNotContain(hangulLetterAraea);
+            assertThat(CourseDepartment.AI_STARTUP.getName())
+                    .isEqualTo("인공지능" + middleDot + "창업연계전공")
+                    .doesNotContain(hangulLetterAraea);
+        }
+
+        @Test
+        void 야간_학과는_접미를_그대로_담는다() {
+            //when & then
+            assertThat(CourseDepartment.ECONOMICS_NIGHT.getName()).isEqualTo("경제학과(야)");
+            assertThat(CourseDepartment.TRADE_NIGHT.getName()).isEqualTo("무역학부(야)");
+            assertThat(CourseDepartment.ECONOMICS_NIGHT.isNight()).isTrue();
+        }
+
+        @Test
+        void 학사_코드가_없는_신설_항목도_이름으로_찾을_수_있다() {
+            //when & then
+            assertThat(CourseDepartment.from("ANTIBODY_ENGINEERING").getName()).isEqualTo("항체공학연계전공");
+            assertThat(CourseDepartment.ANTIBODY_ENGINEERING.getCode()).isEmpty();
         }
     }
 }

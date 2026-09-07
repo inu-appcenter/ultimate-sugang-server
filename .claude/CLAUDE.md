@@ -16,9 +16,22 @@
 
 ```bash
 ./gradlew build      # 빌드
-./gradlew test       # 테스트 (H2)
+./gradlew test       # 테스트 (H2). macOS에서는 아래 전체 실행 명령을 쓴다
 ./gradlew bootRun    # 로컬 실행 (MySQL 필요)
 ```
+
+### macOS에서 테스트 전체 실행
+
+```bash
+ARGS=(); for c in $(find src/test/java -name "*Test.java" | sed 's|src/test/java/||; s|\.java$||; s|/|.|g'); do ARGS+=(--tests "$c"); done
+./gradlew cleanTest test "${ARGS[@]}"
+```
+
+인자 없는 `./gradlew test`는 macOS에서 완주하지 못한다.
+APFS가 파일명을 NFD로 저장하는데 클래스 파일 안의 이름은 NFC라, Gradle이 디렉토리를 훑어
+한글 `@Nested` 클래스를 로드할 때 이름이 어긋나 `NoClassDefFoundError (wrong name: ...)`로 죽는다.
+클래스를 `--tests`로 명시하면 파일명이 아니라 클래스명으로 로드해 이 경로를 타지 않는다.
+ext4를 쓰는 CI(Linux)에서는 나지 않으므로 CI 워크플로는 그대로 둔다.
 
 ## 상호작용 규칙
 

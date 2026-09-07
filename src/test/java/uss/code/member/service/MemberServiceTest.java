@@ -241,4 +241,50 @@ class MemberServiceTest {
             assertThat(response.creditLimit()).isEqualTo(19);
         }
     }
+
+    @Nested
+    class 학적_상태_노출_테스트 {
+
+        @Test
+        void 유예_상태가_그대로_내려간다() {
+            //given
+            final Member member = MemberFixture.createMember(
+                    MemberFixture.nextStudentId(),
+                    "홍길동",
+                    MemberCollege.INFORMATION_TECHNOLOGY,
+                    MemberDepartment.COMPUTER_ENGINEERING,
+                    MemberGrade.SENIOR,
+                    AcademicStatus.DEFERMENT,
+                    3.2
+            );
+            memberRepository.save(member);
+
+            //when
+            final MemberProfileResponse response = memberService.getProfile(member.getId());
+
+            //then
+            assertThat(response.academicStatus()).isEqualTo("유예");
+        }
+
+        @Test
+        void 휴학_상태도_그대로_내려간다() {
+            //given
+            final Member member = MemberFixture.createMember(
+                    MemberFixture.nextStudentId(),
+                    "홍길동",
+                    MemberCollege.INFORMATION_TECHNOLOGY,
+                    MemberDepartment.COMPUTER_ENGINEERING,
+                    MemberGrade.SENIOR,
+                    AcademicStatus.LEAVE_OF_ABSENCE,
+                    3.2
+            );
+            memberRepository.save(member);
+
+            //when
+            final MemberProfileResponse response = memberService.getProfile(member.getId());
+
+            //then
+            assertThat(response.academicStatus()).isEqualTo("휴학");
+        }
+    }
 }

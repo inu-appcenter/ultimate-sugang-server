@@ -15,10 +15,11 @@ public class MemberFixture {
     private static final String ENCODED_PASSWORD = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
 
     private static final AtomicLong EMAIL_SEQUENCE = new AtomicLong();
+    private static final AtomicLong STUDENT_ID_SEQUENCE = new AtomicLong();
 
     public static Member createMember() {
         return createMember(
-                "20240001",
+                nextStudentId(),
                 "홍길동",
                 MemberCollege.INFORMATION_TECHNOLOGY,
                 MemberDepartment.COMPUTER_ENGINEERING,
@@ -48,6 +49,10 @@ public class MemberFixture {
                 academicStatus,
                 lastSemesterGpa
         );
+    }
+
+    public static String nextStudentId() {
+        return "2024" + String.format("%05d", STUDENT_ID_SEQUENCE.incrementAndGet());
     }
 
     public static Member createMember(

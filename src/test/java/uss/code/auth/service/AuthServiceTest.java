@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import uss.code.auth.dto.request.LoginRequest;
+import uss.code.auth.dto.response.StudentIdAvailabilityResponse;
 import uss.code.auth.dto.request.SignUpRequest;
 import uss.code.auth.dto.response.AuthTokenResponse;
 import uss.code.auth.dto.response.EmailAvailabilityResponse;
@@ -39,6 +40,7 @@ class AuthServiceTest {
     private static final double TEST_GPA = 3.5;
 
     private static final String UNKNOWN_EMAIL = "unknown@inu.ac.kr";
+    private static final String UNKNOWN_STUDENT_ID = "209900000";
     private static final String WRONG_PASSWORD = "wrongPassword1234";
     private static final String MISMATCHED_COLLEGE = "ENGINEERING";
     private static final String UNKNOWN_DEPARTMENT = "존재하지_않는_학과";
@@ -82,6 +84,23 @@ class AuthServiceTest {
 
     private SignUpRequest createSignUpRequest() {
         return createSignUpRequest(TEST_COLLEGE, TEST_DEPARTMENT);
+    }
+
+    private SignUpRequest createSignUpRequestOf(
+            final String email,
+            final String studentId
+    ) {
+        return new SignUpRequest(
+                email,
+                TEST_RAW_PASSWORD,
+                studentId,
+                TEST_NAME,
+                TEST_COLLEGE,
+                TEST_DEPARTMENT,
+                TEST_GRADE,
+                TEST_ACADEMIC_STATUS,
+                TEST_GPA
+        );
     }
 
     private String generateExpiredToken(final long memberId) {
@@ -135,9 +154,31 @@ class AuthServiceTest {
             authService.signUp(createSignUpRequest());
 
             //when & then
-            assertThatThrownBy(() -> authService.signUp(createSignUpRequest()))
+            assertThatThrownBy(() -> authService.signUp(createSignUpRequestOf(TEST_EMAIL, UNKNOWN_STUDENT_ID)))
                     .isInstanceOf(RestApiException.class)
                     .hasFieldOrPropertyWithValue("exceptionCode", EMAIL_ALREADY_EXISTS);
+        }
+
+        @Test
+        void 이미_사용_중인_학번이면_예외를_반환한다() {
+            //given
+            authService.signUp(createSignUpRequest());
+
+            //when & then
+            assertThatThrownBy(() -> authService.signUp(createSignUpRequestOf(UNKNOWN_EMAIL, TEST_STUDENT_ID)))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", STUDENT_ID_ALREADY_EXISTS);
+        }
+
+        @Test
+        void 학번과_이메일이_모두_겹치면_학번_사유가_먼저_나간다() {
+            //given
+            authService.signUp(createSignUpRequest());
+
+            //when & then
+            assertThatThrownBy(() -> authService.signUp(createSignUpRequest()))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", STUDENT_ID_ALREADY_EXISTS);
         }
 
         @Test
@@ -191,6 +232,33 @@ class AuthServiceTest {
     }
 
     @Nested
+    class 학번_중복을_검사할_때 {
+
+        @Test
+        void 쓰이지_않은_학번이면_사용_가능으로_응답한다() {
+            //given
+
+            //when
+            final StudentIdAvailabilityResponse response = authService.checkStudentIdAvailability(TEST_STUDENT_ID);
+
+            //then
+            assertThat(response.available()).isTrue();
+        }
+
+        @Test
+        void 이미_쓰이는_학번이면_사용_불가로_응답한다() {
+            //given
+            authService.signUp(createSignUpRequest());
+
+            //when
+            final StudentIdAvailabilityResponse response = authService.checkStudentIdAvailability(TEST_STUDENT_ID);
+
+            //then
+            assertThat(response.available()).isFalse();
+        }
+    }
+
+    @Nested
     class 로그인할_때 {
 
         @BeforeEach
@@ -199,9 +267,9 @@ class AuthServiceTest {
         }
 
         @Test
-        void 이메일과_비밀번호가_맞으면_토큰을_반환한다() {
+        void 학번과_비밀번호가_맞으면_토큰을_반환한다() {
             //given
-            final LoginRequest request = new LoginRequest(TEST_EMAIL, TEST_RAW_PASSWORD);
+            final LoginRequest request = new LoginRequest(TEST_STUDENT_ID, TEST_RAW_PASSWORD);
 
             //when
             final AuthTokenResponse response = authService.login(request);
@@ -209,14 +277,25 @@ class AuthServiceTest {
             //then
             assertThat(response.accessToken()).isNotBlank();
 
-            final Member member = memberRepository.findByEmail(TEST_EMAIL).orElseThrow();
+            final Member member = memberRepository.findByStudentId(TEST_STUDENT_ID).orElseThrow();
             assertThat(jwtProvider.getMemberId(response.accessToken())).isEqualTo(member.getId());
         }
 
         @Test
-        void 없는_이메일이면_예외를_반환한다() {
+        void 없는_학번이면_예외를_반환한다() {
             //given
-            final LoginRequest request = new LoginRequest(UNKNOWN_EMAIL, TEST_RAW_PASSWORD);
+            final LoginRequest request = new LoginRequest(UNKNOWN_STUDENT_ID, TEST_RAW_PASSWORD);
+
+            //when & then
+            assertThatThrownBy(() -> authService.login(request))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", MEMBER_NOT_FOUND);
+        }
+
+        @Test
+        void 이메일로는_로그인할_수_없다() {
+            //given
+            final LoginRequest request = new LoginRequest(TEST_EMAIL, TEST_RAW_PASSWORD);
 
             //when & then
             assertThatThrownBy(() -> authService.login(request))
@@ -227,7 +306,7 @@ class AuthServiceTest {
         @Test
         void 비밀번호가_틀리면_예외를_반환한다() {
             //given
-            final LoginRequest request = new LoginRequest(TEST_EMAIL, WRONG_PASSWORD);
+            final LoginRequest request = new LoginRequest(TEST_STUDENT_ID, WRONG_PASSWORD);
 
             //when & then
             assertThatThrownBy(() -> authService.login(request))

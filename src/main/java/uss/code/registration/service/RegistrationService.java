@@ -62,9 +62,9 @@ public class RegistrationService {
                 .orElseThrow(() -> new RestApiException(COURSE_NOT_FOUND));
 
         validateCourseActive(course);
-        validateDuplicateCourse(registrations, courseId);
         validateCourseScheduleConflict(registrations, course);
         validateDuplicateSubject(registrations, course);
+        validateDuplicateCourse(registrations, courseId);
         validateCreditLimit(registrations, member, course);
         validateCourseTypeLimit(registrations, course);
 

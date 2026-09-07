@@ -93,13 +93,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<CourseTermInfo> findTerms();
 
     @Query("""
-        SELECT DISTINCT c.department
-        FROM Course c
-        WHERE c.department IN :departments
-    """)
-    List<CourseDepartment> findDepartmentsIn(@Param("departments") final List<CourseDepartment> departments);
-
-    @Query("""
         SELECT c
         FROM Course c
         WHERE c.isHussCourse = true

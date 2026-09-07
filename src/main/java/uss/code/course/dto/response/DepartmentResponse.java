@@ -1,7 +1,7 @@
 package uss.code.course.dto.response;
 
 import lombok.Builder;
-import uss.code.member.domain.MemberDepartment;
+import uss.code.course.domain.CourseDepartment;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -11,7 +11,7 @@ public record DepartmentResponse(
 
         String name
 ) {
-    public static DepartmentResponse from(final MemberDepartment department) {
+    public static DepartmentResponse from(final CourseDepartment department) {
         return DepartmentResponse.builder()
                 .code(department.name())
                 .name(department.getName())

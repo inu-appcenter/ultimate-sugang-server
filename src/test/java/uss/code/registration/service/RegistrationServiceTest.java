@@ -23,6 +23,7 @@ import uss.code.member.repository.MemberRepository;
 import uss.code.registration.domain.Registration;
 import uss.code.registration.dto.response.RegistrationCourseResponse;
 import uss.code.registration.dto.response.RegistrationCoursesResponse;
+import uss.code.registration.dto.response.RegistrationResponse;
 import uss.code.registration.fixture.RegistrationFixture;
 import uss.code.registration.repository.RegistrationRepository;
 
@@ -138,7 +139,7 @@ class RegistrationServiceTest {
 
             //then
             assertThat(response.registrationCourseResponses())
-                    .extracting(RegistrationCourseResponse::courseCode)
+                    .extracting(registration -> registration.courseResponse().courseCode())
                     .containsExactlyInAnyOrder("CSE101", "CSE201", "CSE301");
         }
 
@@ -157,7 +158,7 @@ class RegistrationServiceTest {
             final RegistrationCoursesResponse otherResponse = registrationService.getRegistrationCourse(otherMemberId);
             assertThat(otherResponse.registrationCourseResponses()).hasSize(2);
             assertThat(otherResponse.registrationCourseResponses())
-                    .extracting(RegistrationCourseResponse::courseCode)
+                    .extracting(registration -> registration.courseResponse().courseCode())
                     .containsExactlyInAnyOrder("CSE101", "CSE201");
         }
 
@@ -171,21 +172,21 @@ class RegistrationServiceTest {
             //then
             // CSE101: [07-401:월(1-2A),수(1-2A)]
             final RegistrationCourseResponse course1 = response.registrationCourseResponses().stream()
-                    .filter(c -> c.courseCode().equals("CSE101"))
+                    .filter(c -> c.courseResponse().courseCode().equals("CSE101"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(course1.schedule()).isEqualTo("[07-401:월(1-2A),수(1-2A)]");
+            assertThat(course1.courseResponse().schedule()).isEqualTo("월 1-2A (07-401) 수 1-2A (07-401)");
 
             // CSE201: [07-401:화(1-2A)]
             final RegistrationCourseResponse course2 = response.registrationCourseResponses().stream()
-                    .filter(c -> c.courseCode().equals("CSE201"))
+                    .filter(c -> c.courseResponse().courseCode().equals("CSE201"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(course2.schedule()).isEqualTo("[07-401:화(1-2A)]");
+            assertThat(course2.courseResponse().schedule()).isEqualTo("화 1-2A (07-401)");
         }
 
         @Test
-        void 스케줄이_없는_과목은_하이픈으로_반환된다() {
+        void 스케줄이_없는_과목은_빈_문자열로_반환된다() {
             //given
 
             //when
@@ -193,10 +194,10 @@ class RegistrationServiceTest {
 
             //then
             final RegistrationCourseResponse course3 = response.registrationCourseResponses().stream()
-                    .filter(c -> c.courseCode().equals("CSE301"))
+                    .filter(c -> c.courseResponse().courseCode().equals("CSE301"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(course3.schedule()).isEqualTo("-");
+            assertThat(course3.courseResponse().schedule()).isEmpty();
         }
 
         @Test
@@ -208,13 +209,13 @@ class RegistrationServiceTest {
 
             //then
             final RegistrationCourseResponse course1 = response.registrationCourseResponses().stream()
-                    .filter(c -> c.courseCode().equals("CSE101"))
+                    .filter(c -> c.courseResponse().courseCode().equals("CSE101"))
                     .findFirst()
                     .orElseThrow();
 
-            assertThat(course1.titleKr()).isEqualTo("자료구조");
-            assertThat(course1.titleEn()).isEqualTo("Data Structure");
-            assertThat(course1.haksuCode()).isEqualTo("CSE101001");
+            assertThat(course1.courseResponse().name()).isEqualTo("자료구조");
+            assertThat(course1.courseResponse().nameEn()).isEqualTo("Data Structure");
+            assertThat(course1.courseResponse().code()).isEqualTo("CSE101001");
         }
 
         @Test
@@ -910,4 +911,297 @@ class RegistrationServiceTest {
         }
     }
 
+    @Nested
+    class 동일_과목명_신청_차단_테스트 {
+
+        private Long testMemberId;
+        private Long otherSectionId;
+        private Long otherSubjectId;
+
+        @BeforeEach
+        void setUp() {
+            final Member testMember = MemberFixture.createMember();
+            memberRepository.save(testMember);
+            testMemberId = testMember.getId();
+
+            final Course registered = CourseFixture.createCourseWithDetails(
+                    "자료구조", "Data Structure", "CSE101", "CSE101001",
+                    CourseGrade.SOPHOMORE
+            );
+            registered.addCourseSchedule(CourseScheduleFixture.createCourseSchedule(
+                    registered, CourseDay.MONDAY, LocalTime.of(13, 0), LocalTime.of(15, 0)
+            ));
+
+            final Course otherSection = CourseFixture.createCourseWithDetails(
+                    "자료구조", "Data Structure", "CSE101", "CSE101002",
+                    CourseGrade.SOPHOMORE
+            );
+            otherSection.addCourseSchedule(CourseScheduleFixture.createCourseSchedule(
+                    otherSection, CourseDay.TUESDAY, LocalTime.of(9, 0), LocalTime.of(11, 0)
+            ));
+
+            final Course otherSubject = CourseFixture.createCourseWithDetails(
+                    "알고리즘", "Algorithm", "CSE201", "CSE201001",
+                    CourseGrade.SOPHOMORE
+            );
+            otherSubject.addCourseSchedule(CourseScheduleFixture.createCourseSchedule(
+                    otherSubject, CourseDay.WEDNESDAY, LocalTime.of(9, 0), LocalTime.of(11, 0)
+            ));
+
+            courseRepository.saveAll(List.of(registered, otherSection, otherSubject));
+            registrationRepository.save(RegistrationFixture.createRegistration(testMember, registered));
+
+            otherSectionId = otherSection.getId();
+            otherSubjectId = otherSubject.getId();
+        }
+
+        @Test
+        void 분반이_달라도_과목명이_같으면_신청할_수_없다() {
+            //given
+
+            //when & then
+            assertThatThrownBy(() -> registrationService.registerCourse(testMemberId, otherSectionId))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", DUPLICATE_SUBJECT_REGISTERED);
+        }
+
+        @Test
+        void 과목명이_다르면_신청할_수_있다() {
+            //given
+
+            //when
+            registrationService.registerCourse(testMemberId, otherSubjectId);
+
+            //then
+            assertThat(registrationRepository.findByMemberId(testMemberId)).hasSize(2);
+        }
+    }
+
+    @Nested
+    class 검증_순서_테스트 {
+
+        private Long testMemberId;
+        private Long conflictCourseId;
+        private Long sameSubjectCourseId;
+        private Long normalCourseId;
+
+        @BeforeEach
+        void setUp() {
+            final Member testMember = MemberFixture.createMember();
+            memberRepository.save(testMember);
+            testMemberId = testMember.getId();
+
+            final Course registered = CourseFixture.createCourse(
+                    "자료구조", "Data Structure", "CSE101", "CSE101001",
+                    CourseCollege.INFORMATION_TECHNOLOGY, CourseDepartment.COMPUTER_ENGINEERING,
+                    CourseClassification.MAJOR_CORE, CourseArea.MAJOR_CORE,
+                    CourseType.LECTURE, CourseGrade.SOPHOMORE,
+                    21, false, 50, 0
+            );
+            registered.addCourseSchedule(CourseScheduleFixture.createCourseSchedule(
+                    registered, CourseDay.MONDAY, LocalTime.of(13, 0), LocalTime.of(15, 0)
+            ));
+
+            final Course conflictCourse = CourseFixture.createCourseWithDetails(
+                    "운영체제", "Operating System", "CSE202", "CSE202001",
+                    CourseGrade.SOPHOMORE
+            );
+            conflictCourse.addCourseSchedule(CourseScheduleFixture.createCourseSchedule(
+                    conflictCourse, CourseDay.MONDAY, LocalTime.of(14, 0), LocalTime.of(16, 0)
+            ));
+
+            final Course sameSubjectCourse = CourseFixture.createCourseWithDetails(
+                    "자료구조", "Data Structure", "CSE101", "CSE101002",
+                    CourseGrade.SOPHOMORE
+            );
+            sameSubjectCourse.addCourseSchedule(CourseScheduleFixture.createCourseSchedule(
+                    sameSubjectCourse, CourseDay.TUESDAY, LocalTime.of(9, 0), LocalTime.of(11, 0)
+            ));
+
+            final Course normalCourse = CourseFixture.createCourseWithDetails(
+                    "알고리즘", "Algorithm", "CSE201", "CSE201001",
+                    CourseGrade.SOPHOMORE
+            );
+            normalCourse.addCourseSchedule(CourseScheduleFixture.createCourseSchedule(
+                    normalCourse, CourseDay.WEDNESDAY, LocalTime.of(9, 0), LocalTime.of(11, 0)
+            ));
+
+            courseRepository.saveAll(List.of(registered, conflictCourse, sameSubjectCourse, normalCourse));
+            registrationRepository.save(RegistrationFixture.createRegistration(testMember, registered));
+
+            conflictCourseId = conflictCourse.getId();
+            sameSubjectCourseId = sameSubjectCourse.getId();
+            normalCourseId = normalCourse.getId();
+        }
+
+        @Test
+        void 시간표_중복은_학점_상한보다_먼저_판정된다() {
+            //given
+
+            //when & then
+            assertThatThrownBy(() -> registrationService.registerCourse(testMemberId, conflictCourseId))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", COURSE_SCHEDULE_CONFLICT);
+        }
+
+        @Test
+        void 동일_과목명은_학점_상한보다_먼저_판정된다() {
+            //given
+
+            //when & then
+            assertThatThrownBy(() -> registrationService.registerCourse(testMemberId, sameSubjectCourseId))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", DUPLICATE_SUBJECT_REGISTERED);
+        }
+
+        @Test
+        void 앞선_조건에_걸리지_않으면_학점_상한으로_판정된다() {
+            //given
+
+            //when & then
+            assertThatThrownBy(() -> registrationService.registerCourse(testMemberId, normalCourseId))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", CREDIT_LIMIT_EXCEEDED);
+        }
+    }
+
+    @Nested
+    class 신청_성공_응답_테스트 {
+
+        private Long testMemberId;
+        private Long courseId;
+
+        @BeforeEach
+        void setUp() {
+            final Member testMember = MemberFixture.createMember();
+            memberRepository.save(testMember);
+            testMemberId = testMember.getId();
+
+            final Course course = CourseFixture.createCourseWithDetails(
+                    "자료구조", "Data Structure", "CSE101", "CSE101001",
+                    CourseGrade.SOPHOMORE
+            );
+            courseRepository.save(course);
+            courseId = course.getId();
+        }
+
+        @Test
+        void 신청에_성공하면_신청한_강의가_함께_반환된다() {
+            //given
+
+            //when
+            final RegistrationResponse response = registrationService.registerCourse(testMemberId, courseId);
+
+            //then
+            assertThat(response.courseResponse().id()).isEqualTo(String.valueOf(courseId));
+            assertThat(response.courseResponse().name()).isEqualTo("자료구조");
+            assertThat(response.courseResponse().code()).isEqualTo("CSE101001");
+        }
+    }
+
+    @Nested
+    class 학생_기준_이수구분_테스트 {
+
+        private Long testMemberId;
+
+        @BeforeEach
+        void setUp() {
+            final Member testMember = MemberFixture.createMember();
+            memberRepository.save(testMember);
+            testMemberId = testMember.getId();
+
+            final Course ownMajor = CourseFixture.createCourse(
+                    "자료구조", "Data Structure", "CSE101", "CSE101001",
+                    CourseCollege.INFORMATION_TECHNOLOGY, CourseDepartment.COMPUTER_ENGINEERING,
+                    CourseClassification.MAJOR_CORE, CourseArea.MAJOR_CORE,
+                    CourseType.LECTURE, CourseGrade.SOPHOMORE,
+                    3, false, 50, 0
+            );
+            final Course otherMajor = CourseFixture.createCourse(
+                    "경영프로그래밍", "Business Programming", "BUS101", "BUS101001",
+                    CourseCollege.BUSINESS, CourseDepartment.BUSINESS_ADMINISTRATION,
+                    CourseClassification.MAJOR_ADVANCED, CourseArea.MAJOR_ADVANCED,
+                    CourseType.LECTURE, CourseGrade.SOPHOMORE,
+                    3, false, 50, 0
+            );
+            final Course liberalArts = CourseFixture.createCourse(
+                    "글쓰기", "Writing", "GEN101", "GEN101001",
+                    CourseCollege.GENERAL_EDUCATION, CourseDepartment.GENERAL_EDUCATION,
+                    CourseClassification.CORE_LIBERAL_ARTS, CourseArea.CORE_HUMANITIES,
+                    CourseType.LECTURE, CourseGrade.ALL,
+                    3, false, 50, 0
+            );
+
+            courseRepository.saveAll(List.of(ownMajor, otherMajor, liberalArts));
+            registrationRepository.saveAll(List.of(
+                    RegistrationFixture.createRegistration(testMember, ownMajor),
+                    RegistrationFixture.createRegistration(testMember, otherMajor),
+                    RegistrationFixture.createRegistration(testMember, liberalArts)
+            ));
+        }
+
+        @Test
+        void 타_학과_전공과목은_일반선택으로_산출된다() {
+            //given
+
+            //when
+            final RegistrationCoursesResponse response = registrationService.getRegistrationCourse(testMemberId);
+
+            //then
+            final RegistrationCourseResponse otherMajor = findByCourseCode(response, "BUS101");
+            assertThat(otherMajor.courseResponse().courseType()).isEqualTo("전공심화");
+            assertThat(otherMajor.resolvedType()).isEqualTo("일반선택");
+        }
+
+        @Test
+        void 소속_학과_전공과목은_원문_이수구분을_유지한다() {
+            //given
+
+            //when
+            final RegistrationCoursesResponse response = registrationService.getRegistrationCourse(testMemberId);
+
+            //then
+            final RegistrationCourseResponse ownMajor = findByCourseCode(response, "CSE101");
+            assertThat(ownMajor.resolvedType()).isEqualTo("전공핵심");
+        }
+
+        @Test
+        void 교양과목은_타_학과_개설이어도_원문_이수구분을_유지한다() {
+            //given
+
+            //when
+            final RegistrationCoursesResponse response = registrationService.getRegistrationCourse(testMemberId);
+
+            //then
+            final RegistrationCourseResponse liberalArts = findByCourseCode(response, "GEN101");
+            assertThat(liberalArts.resolvedType()).isEqualTo("핵심교양");
+        }
+
+        @Test
+        void 학번과_재수강_구분과_신청_시각이_함께_담긴다() {
+            //given
+            final Member testMember = memberRepository.findById(testMemberId).orElseThrow();
+
+            //when
+            final RegistrationCoursesResponse response = registrationService.getRegistrationCourse(testMemberId);
+
+            //then
+            assertThat(response.registrationCourseResponses())
+                    .allSatisfy(registration -> {
+                        assertThat(registration.studentId()).isEqualTo(testMember.getStudentId());
+                        assertThat(registration.reAttendance()).isEmpty();
+                        assertThat(registration.createdAt()).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}");
+                    });
+        }
+
+        private RegistrationCourseResponse findByCourseCode(
+                final RegistrationCoursesResponse response,
+                final String courseCode
+        ) {
+            return response.registrationCourseResponses().stream()
+                    .filter(registration -> registration.courseResponse().courseCode().equals(courseCode))
+                    .findFirst()
+                    .orElseThrow();
+        }
+    }
 }

@@ -5,9 +5,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import uss.code.course.dto.response.CourseResponse;
+import uss.code.course.dto.response.CoursesResponse;
 import uss.code.course.domain.Course;
-import uss.code.course.dto.response.SearchedCourseResponse;
-import uss.code.course.dto.response.SearchedCoursesResponse;
 import uss.code.course.fixture.CourseFixture;
 import uss.code.course.repository.CourseRepository;
 import uss.code.global.infra.MySqlIntegrationTest;
@@ -55,48 +55,80 @@ class CourseServiceSearchTest {
         @Test
         void 학년이_관련도보다_먼저_정렬된다() {
             //when
-            final SearchedCoursesResponse response = courseService.searchCourses(KEYWORD);
+            final CoursesResponse response = courseService.searchCourses(KEYWORD);
 
             //then
-            assertThat(response.searchedCourseResponses())
-                    .extracting(SearchedCourseResponse::grade)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::grade)
                     .containsExactly("전학년", "전학년", "1학년", "1학년", "4학년");
         }
 
         @Test
         void 같은_학년_안에서는_관련도가_높은_강의가_먼저_온다() {
             //when
-            final SearchedCoursesResponse response = courseService.searchCourses(KEYWORD);
+            final CoursesResponse response = courseService.searchCourses(KEYWORD);
 
             //then
-            final List<SearchedCourseResponse> searchedCourses = response.searchedCourseResponses();
+            final List<CourseResponse> searchedCourses = response.courseResponses();
             assertThat(searchedCourses.subList(0, 2))
-                    .extracting(SearchedCourseResponse::haksuCode)
+                    .extracting(CourseResponse::code)
                     .containsExactly("SRCH002001", "SRCH001001");
         }
 
         @Test
         void 관련도가_같으면_학수번호_순으로_정렬된다() {
             //when
-            final SearchedCoursesResponse response = courseService.searchCourses(KEYWORD);
+            final CoursesResponse response = courseService.searchCourses(KEYWORD);
 
             //then
-            final List<SearchedCourseResponse> searchedCourses = response.searchedCourseResponses();
+            final List<CourseResponse> searchedCourses = response.courseResponses();
             assertThat(searchedCourses.subList(2, 4))
-                    .extracting(SearchedCourseResponse::haksuCode)
+                    .extracting(CourseResponse::code)
                     .containsExactly("SRCH003001", "SRCH004001");
         }
 
         @Test
         void 검색어와_무관한_강의는_결과에_포함되지_않는다() {
             //when
-            final SearchedCoursesResponse response = courseService.searchCourses(KEYWORD);
+            final CoursesResponse response = courseService.searchCourses(KEYWORD);
 
             //then
-            assertThat(response.searchedCourseResponses())
+            assertThat(response.courseResponses())
                     .hasSize(5)
-                    .extracting(SearchedCourseResponse::haksuCode)
+                    .extracting(CourseResponse::code)
                     .doesNotContain("NONE001001", "NONE002001");
+        }
+    }
+
+    @Nested
+    class 검색어_정제_테스트 {
+
+        @BeforeEach
+        void setUp() {
+            courseRepository.saveAll(List.of(
+                    CourseFixture.createCourseWithDetails("현장교육.실습(Ⅴ-1)", "Internship", "FLD001", "FLD001001", ALL),
+                    CourseFixture.createCourseWithDetails("자료구조", "Data Structure", "NONE001", "NONE001001", ALL)
+            ));
+        }
+
+        @Test
+        void 불리언_연산자가_섞인_검색어도_결과가_나온다() {
+            //when
+            final CoursesResponse response = courseService.searchCourses("현장교육.실습(Ⅴ-1)");
+
+            //then
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::code)
+                    .contains("FLD001001");
+        }
+
+        @Test
+        void 연산자만_있는_검색어는_빈_목록을_반환한다() {
+            //when
+            final CoursesResponse response = courseService.searchCourses("+*-");
+
+            //then
+            assertThat(response.courseResponses()).isEmpty();
         }
     }
 }

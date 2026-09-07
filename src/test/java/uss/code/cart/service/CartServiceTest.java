@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import uss.code.cart.domain.Cart;
-import uss.code.cart.dto.response.CartedCourseResponse;
-import uss.code.cart.dto.response.CartedCoursesResponse;
 import uss.code.cart.fixture.CartFixture;
 import uss.code.cart.repository.CartRepository;
 import uss.code.course.domain.Course;
@@ -19,6 +17,8 @@ import uss.code.course.domain.CourseType;
 import uss.code.course.fixture.CourseFixture;
 import uss.code.course.fixture.CourseScheduleFixture;
 import uss.code.course.repository.CourseRepository;
+import uss.code.course.dto.response.CourseResponse;
+import uss.code.course.dto.response.CoursesResponse;
 import uss.code.global.exception.domain.RestApiException;
 import uss.code.global.infra.IntegrationTest;
 import uss.code.member.domain.Member;
@@ -111,10 +111,10 @@ class CartServiceTest {
             //given
 
             //when
-            final CartedCoursesResponse response = cartService.getCartedCourse(testMemberId);
+            final CoursesResponse response = cartService.getCartedCourse(testMemberId);
 
             //then
-            assertThat(response.cartedCourseResponses()).hasSize(3);
+            assertThat(response.courseResponses()).hasSize(3);
         }
 
         @Test
@@ -122,11 +122,11 @@ class CartServiceTest {
             //given
 
             //when
-            final CartedCoursesResponse response = cartService.getCartedCourse(testMemberId);
+            final CoursesResponse response = cartService.getCartedCourse(testMemberId);
 
             //then
-            assertThat(response.cartedCourseResponses())
-                    .extracting(CartedCourseResponse::courseCode)
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
                     .containsExactly("CSE101", "CSE201", "CSE301");
         }
 
@@ -135,25 +135,25 @@ class CartServiceTest {
             //given
 
             //when
-            final CartedCoursesResponse response = cartService.getCartedCourse(testMemberId);
+            final CoursesResponse response = cartService.getCartedCourse(testMemberId);
 
             //then
             // CSE101: 2명 (testMember, otherMember)
-            final CartedCourseResponse course1 = response.cartedCourseResponses().stream()
+            final CourseResponse course1 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("CSE101"))
                     .findFirst()
                     .orElseThrow();
             assertThat(course1.cartCount()).isEqualTo(2);
 
             // CSE201: 2명
-            final CartedCourseResponse course2 = response.cartedCourseResponses().stream()
+            final CourseResponse course2 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("CSE201"))
                     .findFirst()
                     .orElseThrow();
             assertThat(course2.cartCount()).isEqualTo(2);
 
             // CSE301: 1명 (testMember만)
-            final CartedCourseResponse course3 = response.cartedCourseResponses().stream()
+            final CourseResponse course3 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("CSE301"))
                     .findFirst()
                     .orElseThrow();
@@ -165,55 +165,55 @@ class CartServiceTest {
             //given
 
             //when
-            final CartedCoursesResponse response = cartService.getCartedCourse(testMemberId);
+            final CoursesResponse response = cartService.getCartedCourse(testMemberId);
 
             //then
             // CSE101: [07-401:월(1-2A),수(1-2A)]
-            final CartedCourseResponse course1 = response.cartedCourseResponses().stream()
+            final CourseResponse course1 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("CSE101"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(course1.schedule()).isEqualTo("[07-401:월(1-2A),수(1-2A)]");
+            assertThat(course1.schedule()).isEqualTo("월 1-2A (07-401) 수 1-2A (07-401)");
 
             // CSE201: [07-401:화(1-2A)]
-            final CartedCourseResponse course2 = response.cartedCourseResponses().stream()
+            final CourseResponse course2 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("CSE201"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(course2.schedule()).isEqualTo("[07-401:화(1-2A)]");
+            assertThat(course2.schedule()).isEqualTo("화 1-2A (07-401)");
         }
 
         @Test
-        void 스케줄이_없는_과목은_하이픈으로_반환된다() {
+        void 스케줄이_없는_과목은_빈_문자열로_반환된다() {
             //given
 
             //when
-            final CartedCoursesResponse response = cartService.getCartedCourse(testMemberId);
+            final CoursesResponse response = cartService.getCartedCourse(testMemberId);
 
             //then
-            final CartedCourseResponse course3 = response.cartedCourseResponses().stream()
+            final CourseResponse course3 = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("CSE301"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(course3.schedule()).isEqualTo("-");
+            assertThat(course3.schedule()).isEmpty();
         }
 
 
         @Test
-        void 정원에_여유가_있는_과목은_신청_가능으로_조회된다() {
+        void 정원에_여유가_있는_과목은_마감이_아닌_것으로_조회된다() {
             //given
 
             //when
-            final CartedCoursesResponse response = cartService.getCartedCourse(testMemberId);
+            final CoursesResponse response = cartService.getCartedCourse(testMemberId);
 
             //then
-            assertThat(response.cartedCourseResponses())
-                    .extracting(CartedCourseResponse::isRegisterable)
-                    .containsOnly(true);
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::isClosed)
+                    .containsOnly(false);
         }
 
         @Test
-        void 정원이_마감된_과목은_신청_불가로_조회된다() {
+        void 정원이_마감된_과목은_마감으로_조회된다() {
             //given
             final Member testMember = memberRepository.findById(testMemberId).orElseThrow();
 
@@ -232,18 +232,18 @@ class CartServiceTest {
             cartRepository.save(CartFixture.createCart(testMember, fullCourse));
 
             //when
-            final CartedCoursesResponse response = cartService.getCartedCourse(testMemberId);
+            final CoursesResponse response = cartService.getCartedCourse(testMemberId);
 
             //then
-            final CartedCourseResponse fullCourseResponse = response.cartedCourseResponses().stream()
+            final CourseResponse fullCourseResponse = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("CSE999"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(fullCourseResponse.isRegisterable()).isFalse();
+            assertThat(fullCourseResponse.isClosed()).isTrue();
         }
 
         @Test
-        void 폐강된_과목은_정원에_여유가_있어도_신청_불가로_조회된다() {
+        void 폐강된_과목은_정원에_여유가_있어도_마감으로_조회된다() {
             //given
             final Member testMember = memberRepository.findById(testMemberId).orElseThrow();
 
@@ -256,14 +256,14 @@ class CartServiceTest {
             cartRepository.save(CartFixture.createCart(testMember, closedCourse));
 
             //when
-            final CartedCoursesResponse response = cartService.getCartedCourse(testMemberId);
+            final CoursesResponse response = cartService.getCartedCourse(testMemberId);
 
             //then
-            final CartedCourseResponse closedCourseResponse = response.cartedCourseResponses().stream()
+            final CourseResponse closedCourseResponse = response.courseResponses().stream()
                     .filter(c -> c.courseCode().equals("CSE888"))
                     .findFirst()
                     .orElseThrow();
-            assertThat(closedCourseResponse.isRegisterable()).isFalse();
+            assertThat(closedCourseResponse.isClosed()).isTrue();
         }
 
         @Test
@@ -273,10 +273,10 @@ class CartServiceTest {
             memberRepository.save(emptyMember);
 
             //when
-            final CartedCoursesResponse response = cartService.getCartedCourse(emptyMember.getId());
+            final CoursesResponse response = cartService.getCartedCourse(emptyMember.getId());
 
             //then
-            assertThat(response.cartedCourseResponses()).isEmpty();
+            assertThat(response.courseResponses()).isEmpty();
         }
     }
 
@@ -918,12 +918,12 @@ class CartServiceTest {
             entityManager.clear();
 
             //when
-            final CartedCoursesResponse response = cartService.getCartedCourse(testMemberId);
+            final CoursesResponse response = cartService.getCartedCourse(testMemberId);
 
             //then
-            assertThat(response.cartedCourseResponses())
+            assertThat(response.courseResponses())
                     .singleElement()
-                    .extracting(CartedCourseResponse::cartCount)
+                    .extracting(CourseResponse::cartCount)
                     .isEqualTo(2);
         }
     }

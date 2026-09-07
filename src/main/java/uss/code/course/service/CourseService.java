@@ -28,10 +28,8 @@ import uss.code.course.infra.SearchKeywordSanitizer;
 import uss.code.course.repository.CourseRepository;
 import uss.code.global.exception.domain.RestApiException;
 import uss.code.member.domain.Member;
-import uss.code.member.domain.MemberDepartment;
 import uss.code.member.repository.MemberRepository;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,14 +89,9 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public CoursesResponse getOtherDepartmentCourses(final String department) {
-        final MemberDepartment memberDepartment = MemberDepartment.from(department);
+        final CourseDepartment courseDepartment = CourseDepartment.fromDepartment(department);
 
-        final List<CourseDepartment> departments = CourseDepartment.ownedBy(memberDepartment);
-        if (departments.isEmpty()) {
-            return CoursesResponse.of(List.of());
-        }
-
-        final List<Course> courses = courseRepository.findByDepartmentIn(departments);
+        final List<Course> courses = courseRepository.findByDepartment(courseDepartment);
 
         return CoursesResponse.of(toCourseResponses(courses));
     }
@@ -160,11 +153,7 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public InterdisciplinaryMajorsResponse getInterdisciplinaryMajors() {
-        final List<CourseDepartment> interdisciplinaryDepartments = CourseDepartment.interdisciplinaryValues();
-        final List<CourseDepartment> existingDepartments = courseRepository.findDepartmentsIn(interdisciplinaryDepartments);
-
-        final List<InterdisciplinaryMajorResponse> interdisciplinaryMajorResponses = interdisciplinaryDepartments.stream()
-                .filter(existingDepartments::contains)
+        final List<InterdisciplinaryMajorResponse> interdisciplinaryMajorResponses = CourseDepartment.interdisciplinaryValues().stream()
                 .map(InterdisciplinaryMajorResponse::from)
                 .toList();
 
@@ -173,13 +162,7 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public DepartmentsResponse getDepartments() {
-        final List<CourseDepartment> ownedDepartments = Arrays.stream(CourseDepartment.values())
-                .filter(CourseDepartment::hasOwner)
-                .toList();
-        final List<CourseDepartment> existingDepartments = courseRepository.findDepartmentsIn(ownedDepartments);
-
-        final List<DepartmentResponse> departmentResponses = Arrays.stream(MemberDepartment.values())
-                .filter(department -> CourseDepartment.ownedBy(department).stream().anyMatch(existingDepartments::contains))
+        final List<DepartmentResponse> departmentResponses = CourseDepartment.departmentValues().stream()
                 .map(DepartmentResponse::from)
                 .toList();
 

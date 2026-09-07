@@ -1,7 +1,6 @@
 package uss.code.course.domain;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import uss.code.global.exception.domain.RestApiException;
 import uss.code.member.domain.MemberDepartment;
 
@@ -9,11 +8,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static uss.code.global.exception.domain.ExceptionCode.INVALID_DEPARTMENT;
 import static uss.code.global.exception.domain.ExceptionCode.INVALID_ENUM_TYPE;
 import static uss.code.global.exception.domain.ExceptionCode.INVALID_INTERDISCIPLINARY_DEPARTMENT;
 
 @Getter
-@RequiredArgsConstructor
 public enum CourseDepartment {
     // 인문대학
     KOREAN_LITERATURE("AIA1", CourseCollege.HUMANITIES, "국어국문학과", MemberDepartment.KOREAN_LITERATURE),
@@ -41,7 +40,7 @@ public enum CourseDepartment {
     POLITICS_DIPLOMACY("0000699", CourseCollege.COMMERCE_PUBLIC_AFFAIRS, "정치외교학과", MemberDepartment.POLITICS_DIPLOMACY),
     ECONOMICS("0000700", CourseCollege.COMMERCE_PUBLIC_AFFAIRS, "경제학과", MemberDepartment.ECONOMICS),
     ECONOMICS_NIGHT("0000701", CourseCollege.COMMERCE_PUBLIC_AFFAIRS, "경제학과(야)", MemberDepartment.ECONOMICS_NIGHT),
-    TRADE("", CourseCollege.COMMERCE_PUBLIC_AFFAIRS, "무역학부", MemberDepartment.GLOBAL_TRADE_SERVICE),
+    TRADE("", CourseCollege.COMMERCE_PUBLIC_AFFAIRS, "무역학부", MemberDepartment.GLOBAL_TRADE_SERVICE, CourseDepartmentKind.LEGACY),
     TRADE_NIGHT("0000703", CourseCollege.COMMERCE_PUBLIC_AFFAIRS, "무역학부(야)", MemberDepartment.TRADE_NIGHT),
     GLOBAL_TRADE_SERVICE("0000913", CourseCollege.COMMERCE_PUBLIC_AFFAIRS, "Global Trade & Service학부", MemberDepartment.GLOBAL_TRADE_SERVICE),
     CONSUMER_SCIENCE("0000704", CourseCollege.COMMERCE_PUBLIC_AFFAIRS, "소비자학과", MemberDepartment.CONSUMER_SCIENCE),
@@ -118,29 +117,55 @@ public enum CourseDepartment {
     LAW("0000707", CourseCollege.LAW, "법학부", MemberDepartment.LAW),
 
     // 교양
-    GENERAL_EDUCATION("XAA0", CourseCollege.GENERAL_EDUCATION, "교양"),
+    GENERAL_EDUCATION("XAA0", CourseCollege.GENERAL_EDUCATION, "교양", CourseDepartmentKind.NON_MAJOR),
 
     // 교직
-    TEACHING("YAA0", CourseCollege.TEACHING, "교직"),
+    TEACHING("YAA0", CourseCollege.TEACHING, "교직", CourseDepartmentKind.NON_MAJOR),
 
     // 일선
-    GENERAL_ELECTIVE("WAA0", CourseCollege.GENERAL_ELECTIVE, "일선"),
+    GENERAL_ELECTIVE("WAA0", CourseCollege.GENERAL_ELECTIVE, "일선", CourseDepartmentKind.NON_MAJOR),
 
     // 군사학
-    MILITARY("ZAA0", CourseCollege.MILITARY, "군사학"),
+    MILITARY("ZAA0", CourseCollege.MILITARY, "군사학", CourseDepartmentKind.NON_MAJOR),
 
-    // 기타
-    OPTOELECTRONICS("VAB1", CourseCollege.ETC, "광전자공학전공(연계)"),
-    LOGISTICS("VAC1", CourseCollege.ETC, "물류학전공(연계)"),
-    INTERNATIONAL_DEVELOPMENT_COOPERATION("", CourseCollege.ETC, "국제개발협력연계전공"),
-    CREATIVE_DESIGN("0000616", CourseCollege.ETC, "창의적디자인연계전공"),
-    HUMANITIES_CULTURE_ART_PLANNING("0000677", CourseCollege.ETC, "인문문화예술기획연계전공"),
-    SOCIAL_DATA_SCIENCE("0000678", CourseCollege.ETC, "소셜데이터사이언스연계전공"),
-    FUTURE_AUTOMOBILE("0000789", CourseCollege.ETC, "미래자동차연계전공"),
-    FUTURE_EDUCATION_DESIGN("0000849", CourseCollege.ETC, "미래교육디자인연계전공"),
+    // HUSS
     HUSS_INCLUSIVE_SOCIETY_INITIATIVE("VE00", CourseCollege.ETC, "HUSS포용사회이니셔티브학부"),
     HUSS_OTHER_UNIVERSITY("VEA1", CourseCollege.ETC, "HUSS(타대학)"),
-    INTELLIGENT_ROBOT_SYSTEM("0000912", CourseCollege.ETC, "지능형로봇시스템연계전공");
+    HUSS_EXCHANGE_UNIVERSITY("", CourseCollege.ETC, "HUSS(교류대학)"),
+
+    // 연계전공
+    INU_LIBERAL_ARTS("", CourseCollege.ETC, "INU리버럴아츠연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    MICE_SPORTS_TOURISM("", CourseCollege.ETC, "MICE,스포츠및관광연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    PERFORMING_VISUAL_ARTS("", CourseCollege.ETC, "공연예술과시각예술연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    PUBLIC_HEALTH("", CourseCollege.ETC, "공중보건연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    OPTOELECTRONICS("VAB1", CourseCollege.ETC, "광전자공학전공(연계)", CourseDepartmentKind.INTERDISCIPLINARY),
+    INTERNATIONAL_DEVELOPMENT_COOPERATION("", CourseCollege.ETC, "국제개발협력연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    INTERNATIONAL_BUSINESS_TAX("", CourseCollege.ETC, "국제비즈니스및세무연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    GLOBAL_ENTREPRENEURSHIP("", CourseCollege.ETC, "글로벌기업가정신연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    CLIMATE_ENERGY_ENVIRONMENT("", CourseCollege.ETC, "기후,에너지및환경연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    GREEN_CLIMATE("", CourseCollege.ETC, "녹색기후연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    GREEN_CITY("", CourseCollege.ETC, "녹색도시연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    NORTHEAST_ASIAN_STUDIES("", CourseCollege.ETC, "동북아지역학전공(연계)", CourseDepartmentKind.INTERDISCIPLINARY),
+    LOGISTICS("VAC1", CourseCollege.ETC, "물류학전공(연계)", CourseDepartmentKind.INTERDISCIPLINARY),
+    FUTURE_EDUCATION_DESIGN("0000849", CourseCollege.ETC, "미래교육디자인연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    FUTURE_CITY("", CourseCollege.ETC, "미래도시연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    FUTURE_AUTOMOBILE("0000789", CourseCollege.ETC, "미래자동차연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    BIO_CONVERGENCE_STARTUP("", CourseCollege.ETC, "바이오융합\u00B7창업연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    BEAUTY_INDUSTRY("", CourseCollege.ETC, "뷰티산업연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    SOCIAL_DATA_SCIENCE("0000678", CourseCollege.ETC, "소셜데이터사이언스연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    RENEWABLE_ENERGY("", CourseCollege.ETC, "신재생에너지연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    EUROPEAN_TRADE("", CourseCollege.ETC, "유럽통상학전공(연계)", CourseDepartmentKind.INTERDISCIPLINARY),
+    GENOMICS("", CourseCollege.ETC, "유전체학연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    AI_STARTUP("", CourseCollege.ETC, "인공지능\u00B7창업연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    AI_SOFTWARE("", CourseCollege.ETC, "인공지능소프트웨어연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    HUMANITIES_CULTURE_ART_PLANNING("0000677", CourseCollege.ETC, "인문문화예술기획연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    STEM_CELL_TISSUE_ENGINEERING("", CourseCollege.ETC, "줄기세포및조직공학연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    CHINA_STUDIES("", CourseCollege.ETC, "중국연구연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    CHINESE_REGIONAL_STUDIES("", CourseCollege.ETC, "중국지역학전공(연계)", CourseDepartmentKind.INTERDISCIPLINARY),
+    INTELLIGENT_ROBOT("", CourseCollege.ETC, "지능로봇연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    INTELLIGENT_ROBOT_SYSTEM("0000912", CourseCollege.ETC, "지능형로봇시스템연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    CREATIVE_DESIGN("0000616", CourseCollege.ETC, "창의적디자인연계전공", CourseDepartmentKind.INTERDISCIPLINARY),
+    ANTIBODY_ENGINEERING("", CourseCollege.ETC, "항체공학연계전공", CourseDepartmentKind.INTERDISCIPLINARY);
 
     private static final String NIGHT_NAME_SUFFIX = "(야)";
 
@@ -148,13 +173,46 @@ public enum CourseDepartment {
     private final CourseCollege courseCollege;
     private final String name;
     private final MemberDepartment owner;
+    private final CourseDepartmentKind kind;
 
     CourseDepartment(
             final String code,
             final CourseCollege courseCollege,
             final String name
     ) {
-        this(code, courseCollege, name, null);
+        this(code, courseCollege, name, null, CourseDepartmentKind.DEPARTMENT);
+    }
+
+    CourseDepartment(
+            final String code,
+            final CourseCollege courseCollege,
+            final String name,
+            final MemberDepartment owner
+    ) {
+        this(code, courseCollege, name, owner, CourseDepartmentKind.DEPARTMENT);
+    }
+
+    CourseDepartment(
+            final String code,
+            final CourseCollege courseCollege,
+            final String name,
+            final CourseDepartmentKind kind
+    ) {
+        this(code, courseCollege, name, null, kind);
+    }
+
+    CourseDepartment(
+            final String code,
+            final CourseCollege courseCollege,
+            final String name,
+            final MemberDepartment owner,
+            final CourseDepartmentKind kind
+    ) {
+        this.code = code;
+        this.courseCollege = courseCollege;
+        this.name = name;
+        this.owner = owner;
+        this.kind = kind;
     }
 
     public static Optional<CourseDepartment> tryFromCode(final String code) {
@@ -183,10 +241,22 @@ public enum CourseDepartment {
                 .toList();
     }
 
+    public static List<CourseDepartment> departmentValues() {
+        return valuesOf(CourseDepartmentKind.DEPARTMENT);
+    }
+
     public static List<CourseDepartment> interdisciplinaryValues() {
-        return Arrays.stream(values())
-                .filter(CourseDepartment::isInterdisciplinary)
-                .toList();
+        return valuesOf(CourseDepartmentKind.INTERDISCIPLINARY);
+    }
+
+    public static CourseDepartment fromDepartment(final String department){
+        final CourseDepartment courseDepartment = CourseDepartment.from(department);
+
+        if(!courseDepartment.isDepartment()){
+            throw new RestApiException(INVALID_DEPARTMENT);
+        }
+
+        return courseDepartment;
     }
 
     public static CourseDepartment fromInterdisciplinary(final String department){
@@ -199,6 +269,12 @@ public enum CourseDepartment {
         return courseDepartment;
     }
 
+    private static List<CourseDepartment> valuesOf(final CourseDepartmentKind kind) {
+        return Arrays.stream(values())
+                .filter(department -> department.kind == kind)
+                .toList();
+    }
+
     public boolean hasOwner() {
         return owner != null;
     }
@@ -207,17 +283,11 @@ public enum CourseDepartment {
         return name.endsWith(NIGHT_NAME_SUFFIX);
     }
 
-    private boolean isInterdisciplinary(){
-        return this == OPTOELECTRONICS ||
-                this == LOGISTICS ||
-                this == INTERNATIONAL_DEVELOPMENT_COOPERATION ||
-                this == CREATIVE_DESIGN ||
-                this == HUMANITIES_CULTURE_ART_PLANNING ||
-                this == SOCIAL_DATA_SCIENCE ||
-                this == FUTURE_AUTOMOBILE ||
-                this == FUTURE_EDUCATION_DESIGN ||
-                this == HUSS_INCLUSIVE_SOCIETY_INITIATIVE ||
-                this == HUSS_OTHER_UNIVERSITY ||
-                this == INTELLIGENT_ROBOT_SYSTEM;
+    public boolean isDepartment() {
+        return kind == CourseDepartmentKind.DEPARTMENT;
+    }
+
+    public boolean isInterdisciplinary() {
+        return kind == CourseDepartmentKind.INTERDISCIPLINARY;
     }
 }

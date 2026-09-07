@@ -35,6 +35,7 @@ public enum ExceptionCode {
     COURSE_SCHEDULE_CONFLICT(CONFLICT, "CRS-005", "과목 시간표가 겹쳐요."),
     COURSE_TYPE_LIMIT_EXCEEDED(BAD_REQUEST, "CRS-006", "해당 과목 유형의 등록 제한을 초과했어요."),
     INVALID_GENERAL_EDUCATION_CLASSIFICATION(BAD_REQUEST, "CRS-007", "유효하지 않은 교양 이수구분이에요."),
+    INVALID_DEPARTMENT(BAD_REQUEST, "CRS-008", "유효하지 않은 학과예요."),
 
     // 장바구니 (CART)
     CARTED_COURSE_NOT_FOUND(NOT_FOUND, "CART-001", "장바구니에 담은 과목을 찾을 수 없어요."),

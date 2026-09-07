@@ -76,15 +76,19 @@ public interface CourseControllerDocs {
             @RequestParam(value = "area-code", required = false) final String areaCode
     );
 
-    @Operation(summary = "타학과 과목 조회", description = "특정 학과의 과목 목록을 조회합니다.<br>" +
-            "학과는 회원이 소속될 수 있는 학과, 학부 이름으로 넘깁니다. 교양, 교직, 일선, 군사학, 연계전공은 학과가 아니므로 넘길 수 없습니다.<br>" +
-            "학부를 넘기면 그 학부의 하위 전공 과목까지 함께 조회됩니다.<br>" +
+    @Operation(summary = "타학과 과목 조회", description = "특정 학과가 개설한 과목 목록을 조회합니다.<br>" +
+            "학과는 학과 조회가 내려준 code로 넘깁니다. 교양, 교직, 일선, 군사학, 연계전공은 학과가 아니므로 넘길 수 없습니다.<br>" +
+            "학부를 넘기면 그 학부가 개설한 과목만 조회됩니다. 하위 전공 과목은 그 전공을 따로 넘겨야 합니다.<br>" +
             "🔐 <strong>Jwt 필요</strong><br>")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "✅ 타학과 과목 조회 성공"),
             @ApiResponse(responseCode = "400", description = "🚨 유효하지 않은 학과",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             examples = {
+                                    @ExampleObject(
+                                            name = "학과가 아닌 값",
+                                            value = "{\"code\" : \"CRS-008\", \"message\" : \"유효하지 않은 학과예요.\"}"
+                                    ),
                                     @ExampleObject(
                                             name = "존재하지 않는 학과",
                                             value = "{\"code\" : \"GLB-002\", \"message\" : \"유효하지 않은 열거타입이에요.\"}"
@@ -155,7 +159,7 @@ public interface CourseControllerDocs {
     @GetMapping("/terms")
     ResponseEntity<CourseTermsResponse> getTerms();
 
-    @Operation(summary = "연계전공 조회", description = "과목이 적재된 연계전공 목록을 조회합니다.<br>" +
+    @Operation(summary = "연계전공 조회", description = "연계전공 목록을 조회합니다. 과목 적재 여부와 무관하게 전건이 내려갑니다.<br>" +
             "🔐 <strong>Jwt 필요</strong><br>")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "✅ 연계전공 조회 성공")
@@ -163,7 +167,7 @@ public interface CourseControllerDocs {
     @GetMapping("/interdisciplinary-majors")
     ResponseEntity<InterdisciplinaryMajorsResponse> getInterdisciplinaryMajors();
 
-    @Operation(summary = "학과 조회", description = "과목이 적재된 학과 목록을 조회합니다.<br>" +
+    @Operation(summary = "학과 조회", description = "과목을 개설하는 학과 목록을 조회합니다. 과목 적재 여부와 무관하게 전건이 내려갑니다.<br>" +
             "응답의 code를 타학과 과목 조회의 department 파라미터로 넘깁니다.<br>" +
             "🔐 <strong>Jwt 필요</strong><br>")
     @ApiResponses({

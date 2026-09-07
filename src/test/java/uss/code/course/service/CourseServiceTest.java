@@ -344,7 +344,7 @@ class CourseServiceTest {
         }
 
         @Test
-        void 타학과로_학부를_조회해도_하위_전공_과목까지_함께_조회된다() {
+        void 타학과로_학부를_조회하면_학부가_개설한_과목만_조회된다() {
             //given
             final String department = "ELECTRONICS_ENGINEERING_SCHOOL";
 
@@ -354,7 +354,21 @@ class CourseServiceTest {
             //then
             assertThat(response.courseResponses())
                     .extracting(CourseResponse::courseCode)
-                    .containsExactlyInAnyOrder("ELE101", "ELE201", "ELE202", "ELE401");
+                    .containsExactly("ELE101")
+                    .doesNotContain("ELE201", "ELE202", "ELE401");
+        }
+
+        @Test
+        void 전공_조회는_학부_소속_기준이라_하위_전공까지_함께_조회한다() {
+            //given
+
+            //when
+            final CoursesResponse response = courseService.getMajorCourses(electronicsMemberId);
+
+            //then
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
+                    .contains("ELE101", "ELE201", "ELE202", "ELE401");
         }
 
         @Test
@@ -823,7 +837,86 @@ class CourseServiceTest {
             //when & then
             assertThatThrownBy(() -> courseService.getOtherDepartmentCourses(generalEducation))
                     .isInstanceOf(RestApiException.class)
-                    .hasFieldOrPropertyWithValue("exceptionCode", INVALID_ENUM_TYPE);
+                    .hasFieldOrPropertyWithValue("exceptionCode", INVALID_DEPARTMENT);
+        }
+
+        @Test
+        void 연계전공으로_조회하면_예외가_발생한다() {
+            //given
+            final String interdisciplinary = "LOGISTICS";
+
+            //when & then
+            assertThatThrownBy(() -> courseService.getOtherDepartmentCourses(interdisciplinary))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", INVALID_DEPARTMENT);
+        }
+
+        @Test
+        void 폐지된_학과로_조회하면_예외가_발생한다() {
+            //given
+            final String legacy = "TRADE";
+
+            //when & then
+            assertThatThrownBy(() -> courseService.getOtherDepartmentCourses(legacy))
+                    .isInstanceOf(RestApiException.class)
+                    .hasFieldOrPropertyWithValue("exceptionCode", INVALID_DEPARTMENT);
+        }
+
+        @Test
+        void 학부를_넘겨도_하위_전공_과목은_함께_조회되지_않는다() {
+            //given
+            final Course schoolCourse = CourseFixture.createCourseWithDepartmentAndDetails(
+                    "전자회로", "Circuits", "ELE101", "ELE101001",
+                    CourseDepartment.ELECTRONICS_ENGINEERING_SCHOOL, CourseGrade.SOPHOMORE
+            );
+            final Course majorCourse = CourseFixture.createCourseWithDepartmentAndDetails(
+                    "반도체소자", "Semiconductor", "SEM101", "SEM101001",
+                    CourseDepartment.SEMICONDUCTOR_CONVERGENCE_MAJOR, CourseGrade.SOPHOMORE
+            );
+            courseRepository.saveAll(List.of(schoolCourse, majorCourse));
+
+            //when
+            final CoursesResponse response = courseService.getOtherDepartmentCourses(
+                    CourseDepartment.ELECTRONICS_ENGINEERING_SCHOOL.name()
+            );
+
+            //then
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
+                    .containsExactly("ELE101")
+                    .doesNotContain("SEM101");
+        }
+
+        @Test
+        void 하위_전공을_넘기면_그_전공_과목만_조회된다() {
+            //given
+            final Course majorCourse = CourseFixture.createCourseWithDepartmentAndDetails(
+                    "반도체소자", "Semiconductor", "SEM101", "SEM101001",
+                    CourseDepartment.SEMICONDUCTOR_CONVERGENCE_MAJOR, CourseGrade.SOPHOMORE
+            );
+            courseRepository.save(majorCourse);
+
+            //when
+            final CoursesResponse response = courseService.getOtherDepartmentCourses(
+                    CourseDepartment.SEMICONDUCTOR_CONVERGENCE_MAJOR.name()
+            );
+
+            //then
+            assertThat(response.courseResponses())
+                    .extracting(CourseResponse::courseCode)
+                    .containsExactly("SEM101");
+        }
+
+        @Test
+        void 과목이_없는_학과는_빈_목록을_반환한다() {
+            //given
+            final String emptyDepartment = "HUSS_EXCHANGE_UNIVERSITY";
+
+            //when
+            final CoursesResponse response = courseService.getOtherDepartmentCourses(emptyDepartment);
+
+            //then
+            assertThat(response.courseResponses()).isEmpty();
         }
 
     }
@@ -1443,7 +1536,25 @@ class CourseServiceTest {
         }
 
         @Test
-        void 과목이_적재된_연계전공만_반환된다() {
+        void 과목_적재_여부와_무관하게_연계전공_전건이_반환된다() {
+            //given
+
+            //when
+            final InterdisciplinaryMajorsResponse response = courseService.getInterdisciplinaryMajors();
+
+            //then
+            assertThat(response.interdisciplinaryMajorResponses()).hasSize(32);
+            assertThat(response.interdisciplinaryMajorResponses())
+                    .extracting(InterdisciplinaryMajorResponse::code, InterdisciplinaryMajorResponse::name)
+                    .contains(
+                            tuple("LOGISTICS", "물류학전공(연계)"),
+                            tuple("SOCIAL_DATA_SCIENCE", "소셜데이터사이언스연계전공"),
+                            tuple("ANTIBODY_ENGINEERING", "항체공학연계전공")
+                    );
+        }
+
+        @Test
+        void 연계전공이_아닌_학과는_목록에_섞이지_않는다() {
             //given
 
             //when
@@ -1451,11 +1562,8 @@ class CourseServiceTest {
 
             //then
             assertThat(response.interdisciplinaryMajorResponses())
-                    .extracting(InterdisciplinaryMajorResponse::code, InterdisciplinaryMajorResponse::name)
-                    .containsExactly(
-                            tuple("LOGISTICS", "물류학전공(연계)"),
-                            tuple("SOCIAL_DATA_SCIENCE", "소셜데이터사이언스연계전공")
-                    );
+                    .extracting(InterdisciplinaryMajorResponse::name)
+                    .doesNotContain("수학과", "교양", "HUSS(타대학)");
         }
     }
 
@@ -1658,41 +1766,15 @@ class CourseServiceTest {
     @Nested
     class 학과_목록_조회_테스트 {
 
-        @BeforeEach
-        void setUp() {
-            final Course computerCourse = CourseFixture.createCourseWithDepartmentAndDetails(
-                    "자료구조", "Data Structure", "COM101", "COM101001",
-                    CourseDepartment.COMPUTER_ENGINEERING, CourseGrade.SOPHOMORE
-            );
-            final Course businessCourse = CourseFixture.createCourseWithDepartmentAndDetails(
-                    "경영학원론", "Business", "BUS101", "BUS101001",
-                    CourseDepartment.BUSINESS_ADMINISTRATION, CourseGrade.FRESHMAN
-            );
-            final Course generalEducationCourse = CourseFixture.createCourse(
-                    "글쓰기", "Writing", "GEN101", "GEN101001",
-                    CourseCollege.GENERAL_EDUCATION, CourseDepartment.GENERAL_EDUCATION,
-                    CourseClassification.CORE_LIBERAL_ARTS, CourseArea.CORE_HUMANITIES,
-                    CourseType.LECTURE, CourseGrade.ALL,
-                    3, false, 50, 0
-            );
-
-            courseRepository.saveAll(List.of(computerCourse, businessCourse, generalEducationCourse));
-        }
-
         @Test
-        void 과목이_적재된_학과만_반환된다() {
+        void 과목_적재_여부와_무관하게_학과_전건이_반환된다() {
             //given
 
             //when
             final DepartmentsResponse response = courseService.getDepartments();
 
             //then
-            assertThat(response.departmentResponses())
-                    .extracting(DepartmentResponse::code)
-                    .containsExactlyInAnyOrder(
-                            MemberDepartment.COMPUTER_ENGINEERING.name(),
-                            MemberDepartment.BUSINESS_ADMINISTRATION.name()
-                    );
+            assertThat(response.departmentResponses()).hasSize(76);
         }
 
         @Test
@@ -1704,12 +1786,16 @@ class CourseServiceTest {
 
             //then
             assertThat(response.departmentResponses())
-                    .extracting(DepartmentResponse::name)
-                    .contains("컴퓨터공학부", "경영학부");
+                    .extracting(DepartmentResponse::code, DepartmentResponse::name)
+                    .contains(
+                            tuple("COMPUTER_ENGINEERING", "컴퓨터공학부"),
+                            tuple("SEMICONDUCTOR_CONVERGENCE_MAJOR", "반도체융합전공"),
+                            tuple("HUSS_EXCHANGE_UNIVERSITY", "HUSS(교류대학)")
+                    );
         }
 
         @Test
-        void 학생_소속이_아닌_교양은_학과_목록에_없다() {
+        void 교양과_교직과_일선과_군사학은_학과_목록에_없다() {
             //given
 
             //when
@@ -1718,7 +1804,46 @@ class CourseServiceTest {
             //then
             assertThat(response.departmentResponses())
                     .extracting(DepartmentResponse::name)
-                    .doesNotContain("교양", "일선", "교직", "군사학");
+                    .doesNotContain("교양", "교직", "일선", "군사학");
+        }
+
+        @Test
+        void 연계전공은_학과_목록에_없다() {
+            //given
+
+            //when
+            final DepartmentsResponse response = courseService.getDepartments();
+
+            //then
+            assertThat(response.departmentResponses())
+                    .extracting(DepartmentResponse::name)
+                    .doesNotContain("물류학전공(연계)", "항체공학연계전공");
+        }
+
+        @Test
+        void 폐지된_학과는_학과_목록에_없다() {
+            //given
+
+            //when
+            final DepartmentsResponse response = courseService.getDepartments();
+
+            //then
+            assertThat(response.departmentResponses())
+                    .extracting(DepartmentResponse::code)
+                    .doesNotContain("TRADE");
+        }
+
+        @Test
+        void HUSS_두_건은_학과_목록에_있다() {
+            //given
+
+            //when
+            final DepartmentsResponse response = courseService.getDepartments();
+
+            //then
+            assertThat(response.departmentResponses())
+                    .extracting(DepartmentResponse::name)
+                    .contains("HUSS(타대학)", "HUSS포용사회이니셔티브학부");
         }
     }
 }

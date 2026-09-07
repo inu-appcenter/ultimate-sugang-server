@@ -142,6 +142,8 @@ public enum CourseDepartment {
     HUSS_OTHER_UNIVERSITY("VEA1", CourseCollege.ETC, "HUSS(타대학)"),
     INTELLIGENT_ROBOT_SYSTEM("0000912", CourseCollege.ETC, "지능형로봇시스템연계전공");
 
+    private static final String NIGHT_NAME_SUFFIX = "(야)";
+
     private final String code;
     private final CourseCollege courseCollege;
     private final String name;
@@ -199,6 +201,10 @@ public enum CourseDepartment {
 
     public boolean hasOwner() {
         return owner != null;
+    }
+
+    public boolean isNight() {
+        return name.endsWith(NIGHT_NAME_SUFFIX);
     }
 
     private boolean isInterdisciplinary(){

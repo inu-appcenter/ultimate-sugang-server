@@ -1,58 +1,65 @@
 package uss.code.course.infra;
 
 import lombok.experimental.UtilityClass;
+import uss.code.course.domain.CourseDay;
 import uss.code.course.domain.CourseSchedule;
 
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @UtilityClass
 public class CourseScheduleFormatter {
 
-    private static final String NO_SCHEDULE = "-";
-    private static final String GROUP_PREFIX = "[";
-    private static final String GROUP_SUFFIX = "]";
-    private static final String CLASSROOM_DELIMITER = ":";
-    private static final String PERIOD_DELIMITER = ",";
-    private static final String PERIOD_PREFIX = "(";
-    private static final String PERIOD_SUFFIX = ")";
+    private static final String NO_SCHEDULE = "";
+    private static final String DAY_PERIOD_DELIMITER = " ";
+    private static final String GROUP_DELIMITER = " ";
+    private static final String CLASSROOM_PREFIX = " (";
+    private static final String CLASSROOM_SUFFIX = ")";
 
     public static String format(final List<CourseSchedule> schedules) {
         if (schedules.isEmpty()) {
             return NO_SCHEDULE;
         }
 
-        return groupByClassroom(schedules).entrySet().stream()
-                .map(entry -> formatClassroomSchedules(entry.getKey(), entry.getValue()))
-                .collect(Collectors.joining());
-    }
-
-    private static Map<String, List<CourseSchedule>> groupByClassroom(final List<CourseSchedule> schedules) {
-        return schedules.stream()
+        final List<CourseSchedule> sorted = schedules.stream()
                 .sorted(Comparator.comparing(CourseSchedule::getDayOfWeek)
                         .thenComparing(CourseSchedule::getStartTime))
-                .collect(Collectors.groupingBy(
-                        CourseSchedule::getClassroom,
-                        LinkedHashMap::new,
-                        Collectors.toList()
-                ));
+                .toList();
+
+        final List<String> groups = new ArrayList<>();
+        final List<String> periods = new ArrayList<>();
+        CourseSchedule groupHead = sorted.get(0);
+
+        for (final CourseSchedule schedule : sorted) {
+            if (!isSameGroup(groupHead, schedule)) {
+                groups.add(formatGroup(groupHead.getDayOfWeek(), periods, groupHead.getClassroom()));
+                periods.clear();
+                groupHead = schedule;
+            }
+            periods.add(schedule.getPeriodName());
+        }
+        groups.add(formatGroup(groupHead.getDayOfWeek(), periods, groupHead.getClassroom()));
+
+        return String.join(GROUP_DELIMITER, groups);
     }
 
-    private static String formatClassroomSchedules(
-            final String classroom,
-            final List<CourseSchedule> classroomSchedules
+    private static boolean isSameGroup(
+            final CourseSchedule groupHead,
+            final CourseSchedule schedule
     ) {
-        final String periods = classroomSchedules.stream()
-                .map(CourseScheduleFormatter::formatPeriod)
-                .collect(Collectors.joining(PERIOD_DELIMITER));
-
-        return GROUP_PREFIX + classroom + CLASSROOM_DELIMITER + periods + GROUP_SUFFIX;
+        return groupHead.getDayOfWeek() == schedule.getDayOfWeek()
+                && groupHead.getClassroom().equals(schedule.getClassroom());
     }
 
-    private static String formatPeriod(final CourseSchedule schedule) {
-        return schedule.getDayOfWeek().getName() + PERIOD_PREFIX + schedule.getPeriodName() + PERIOD_SUFFIX;
+    private static String formatGroup(
+            final CourseDay day,
+            final List<String> periods,
+            final String classroom
+    ) {
+        return day.getName()
+                + DAY_PERIOD_DELIMITER
+                + String.join(DAY_PERIOD_DELIMITER, periods)
+                + CLASSROOM_PREFIX + classroom + CLASSROOM_SUFFIX;
     }
 }

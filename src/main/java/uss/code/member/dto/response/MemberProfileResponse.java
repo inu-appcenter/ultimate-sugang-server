@@ -10,14 +10,20 @@ public record MemberProfileResponse(
         String email,
 
         String department,
+
         String studentId,
+
         String name,
+
         String grade,
-        String academicStatus
+
+        String academicStatus,
+
+        double gpa,
+
+        int creditLimit
 ) {
-    public static MemberProfileResponse of(
-            final Member member
-    ){
+    public static MemberProfileResponse of(final Member member) {
         return MemberProfileResponse.builder()
                 .email(member.getEmail())
                 .department(member.getDepartment().getName())
@@ -25,6 +31,8 @@ public record MemberProfileResponse(
                 .name(member.getName())
                 .grade(member.getGrade().getName())
                 .academicStatus(member.getAcademicStatus().getName())
+                .gpa(member.getLastSemesterGpa())
+                .creditLimit(member.getMaxCredit())
                 .build();
     }
 }

@@ -14,11 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import uss.code.auth.annotation.Auth;
 import uss.code.course.dto.response.CourseCategoriesResponse;
 import uss.code.course.dto.response.CourseTermsResponse;
-import uss.code.course.dto.response.GeneralEducationCoursesResponse;
-import uss.code.course.dto.response.InterdisciplinaryMajorCoursesResponse;
+import uss.code.course.dto.response.CoursesResponse;
+import uss.code.course.dto.response.DepartmentsResponse;
 import uss.code.course.dto.response.InterdisciplinaryMajorsResponse;
-import uss.code.course.dto.response.MajorCoursesResponse;
-import uss.code.course.dto.response.SearchedCoursesResponse;
 import uss.code.global.annotation.ParamValidation;
 import uss.code.global.exception.dto.response.ErrorResponse;
 
@@ -41,12 +39,24 @@ public interface CourseControllerDocs {
             )
     })
     @GetMapping("/major")
-    ResponseEntity<MajorCoursesResponse> getMajorCourses(@Auth final long memberId);
+    ResponseEntity<CoursesResponse> getMajorCourses(@Auth final long memberId);
 
-    @Operation(summary = "교양 과목 조회", description = "특정 교양 영역의 과목 목록을 조회합니다.<br>" +
+    @Operation(summary = "교양 과목 조회", description = "이수구분 코드로 교양 과목 목록을 조회합니다.<br>" +
+            "이수구분 코드는 기초교양 11, 핵심교양 21, 심화교양 23, 교직 50, 군사학 70, 일반선택 80 입니다.<br>" +
+            "이수영역 코드를 함께 넘기면 그 영역만, 넘기지 않으면 이수구분 전체를 조회합니다.<br>" +
             "🔐 <strong>Jwt 필요</strong><br>")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "✅ 교양 과목 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "🚨 유효하지 않은 교양 이수구분",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = {
+                                    @ExampleObject(
+                                            name = "유효하지 않은 교양 이수구분",
+                                            value = "{\"code\" : \"CRS-007\", \"message\" : \"유효하지 않은 교양 이수구분이에요.\"}"
+                                    )
+                            },
+                            schema = @Schema(implementation = ErrorResponse.class))
+            ),
             @ApiResponse(responseCode = "400", description = "🚨 유효하지 않은 교양 영역",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             examples = {
@@ -59,9 +69,11 @@ public interface CourseControllerDocs {
             )
     })
     @GetMapping("/general-education")
-    ResponseEntity<GeneralEducationCoursesResponse> getGeneralEducationCourses(
-            @ParamValidation(maxLength = 30)
-            @RequestParam("course-area") final String courseArea
+    ResponseEntity<CoursesResponse> getGeneralEducationCourses(
+            @ParamValidation(maxLength = 3)
+            @RequestParam("classification-code") final String classificationCode,
+            @ParamValidation(maxLength = 3)
+            @RequestParam(value = "area-code", required = false) final String areaCode
     );
 
     @Operation(summary = "타학과 과목 조회", description = "특정 학과의 과목 목록을 조회합니다.<br>" +
@@ -82,7 +94,7 @@ public interface CourseControllerDocs {
             )
     })
     @GetMapping("/other-department")
-    ResponseEntity<MajorCoursesResponse> getOtherDepartmentCourses(
+    ResponseEntity<CoursesResponse> getOtherDepartmentCourses(
             @ParamValidation(maxLength = 40)
             @RequestParam("department") final String department
     );
@@ -103,7 +115,7 @@ public interface CourseControllerDocs {
             )
     })
     @GetMapping("/interdisciplinary-major")
-    ResponseEntity<InterdisciplinaryMajorCoursesResponse> getInterdisciplinaryMajorCourses(
+    ResponseEntity<CoursesResponse> getInterdisciplinaryMajorCourses(
             @ParamValidation(maxLength = 40)
             @RequestParam("department") final String department
     );
@@ -114,7 +126,7 @@ public interface CourseControllerDocs {
             @ApiResponse(responseCode = "200", description = "✅ 과목 검색 성공")
     })
     @GetMapping("/search")
-    ResponseEntity<SearchedCoursesResponse> searchCourses(
+    ResponseEntity<CoursesResponse> searchCourses(
             @ParamValidation(maxLength = 70)
             @RequestParam("keyword") final String keyword
     );
@@ -125,7 +137,7 @@ public interface CourseControllerDocs {
             @ApiResponse(responseCode = "200", description = "✅ HUSS 과목 조회 성공")
     })
     @GetMapping("/huss")
-    ResponseEntity<MajorCoursesResponse> getHussCourses();
+    ResponseEntity<CoursesResponse> getHussCourses();
 
     @Operation(summary = "과목 카테고리 조회", description = "적재된 과목의 이수구분과 그에 속한 이수영역 목록을 조회합니다.<br>" +
             "🔐 <strong>Jwt 필요</strong><br>")
@@ -150,4 +162,13 @@ public interface CourseControllerDocs {
     })
     @GetMapping("/interdisciplinary-majors")
     ResponseEntity<InterdisciplinaryMajorsResponse> getInterdisciplinaryMajors();
+
+    @Operation(summary = "학과 조회", description = "과목이 적재된 학과 목록을 조회합니다.<br>" +
+            "응답의 code를 타학과 과목 조회의 department 파라미터로 넘깁니다.<br>" +
+            "🔐 <strong>Jwt 필요</strong><br>")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "✅ 학과 조회 성공")
+    })
+    @GetMapping("/departments")
+    ResponseEntity<DepartmentsResponse> getDepartments();
 }

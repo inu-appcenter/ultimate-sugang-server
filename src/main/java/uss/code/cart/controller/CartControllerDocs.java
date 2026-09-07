@@ -14,20 +14,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import uss.code.auth.annotation.Auth;
-import uss.code.cart.dto.response.CartedCoursesResponse;
+import uss.code.course.dto.response.CoursesResponse;
 import uss.code.global.exception.dto.response.ErrorResponse;
 
 @Tag(name = "Cart API", description = "장바구니 관련 API")
 public interface CartControllerDocs {
 
     @Operation(summary = "장바구니 조회", description = "사용자의 장바구니에 담긴 과목 목록을 조회합니다.<br>" +
-            "각 과목의 신청 가능 여부(isRegisterable)를 함께 내려줍니다. 폐강되지 않았고 정원이 마감되지 않은 과목만 신청 가능입니다.<br>" +
+            "각 과목의 마감 여부(isClosed)를 함께 내려줍니다. 폐강됐거나 정원이 찬 과목이 마감입니다.<br>" +
             "🔐 <strong>Jwt 필요</strong><br>")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "✅ 장바구니 조회 성공")
     })
     @GetMapping
-    ResponseEntity<CartedCoursesResponse> getCartedCourse(@Auth final long memberId);
+    ResponseEntity<CoursesResponse> getCartedCourse(@Auth final long memberId);
 
     @Operation(summary = "장바구니 추가", description = "특정 과목을 장바구니에 추가합니다.<br>" +
             "🔐 <strong>Jwt 필요</strong><br>")

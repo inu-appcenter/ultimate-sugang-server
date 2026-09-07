@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import uss.code.course.domain.Course;
-import uss.code.course.domain.CourseArea;
 import uss.code.course.domain.CourseDepartment;
 import uss.code.course.domain.CourseTerm;
 import uss.code.course.dto.common.CourseCapacity;
@@ -35,7 +34,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findByDepartmentIn(@Param("departments") final List<CourseDepartment> departments);
 
     @Query("""
-        SELECT new uss.code.course.dto.common.CourseCapacity(c.id, c.currentEnrollment, c.maxCapacity)
+        SELECT new uss.code.course.dto.common.CourseCapacity(c.id, c.currentEnrollment, c.maxCapacity, c.cartCount)
         FROM Course c
         WHERE c.department IN :departments
           AND c.status = uss.code.course.domain.CourseStatus.ACTIVE
@@ -45,19 +44,19 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query("""
         SELECT c
         FROM Course c
-        WHERE c.area = :area
+        WHERE c.classificationCode = :classificationCode
           AND c.status = uss.code.course.domain.CourseStatus.ACTIVE
         ORDER BY c.gradeCode, c.classificationCode, c.haksuCode
     """)
-    List<Course> findByArea(@Param("area") final CourseArea area);
+    List<Course> findByClassificationCode(@Param("classificationCode") final String classificationCode);
 
     @Query("""
-        SELECT new uss.code.course.dto.common.CourseCapacity(c.id, c.currentEnrollment, c.maxCapacity)
+        SELECT new uss.code.course.dto.common.CourseCapacity(c.id, c.currentEnrollment, c.maxCapacity, c.cartCount)
         FROM Course c
-        WHERE c.area = :area
+        WHERE c.classificationCode = :classificationCode
           AND c.status = uss.code.course.domain.CourseStatus.ACTIVE
     """)
-    List<CourseCapacity> findCapacitiesByArea(@Param("area") final CourseArea area);
+    List<CourseCapacity> findCapacitiesByClassificationCode(@Param("classificationCode") final String classificationCode);
 
     @Query(value = """
         SELECT DISTINCT c.*

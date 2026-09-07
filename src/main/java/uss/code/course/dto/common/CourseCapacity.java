@@ -5,7 +5,9 @@ public record CourseCapacity(
 
         int currentEnrollment,
 
-        int maxCapacity
+        int maxCapacity,
+
+        int cartCount
 ) {
     public boolean isRegisterable() {
         return currentEnrollment < maxCapacity;

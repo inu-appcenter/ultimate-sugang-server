@@ -5,42 +5,43 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uss.code.course.domain.Course;
 import uss.code.course.domain.CourseArea;
+import uss.code.course.domain.CourseClassification;
 import uss.code.course.domain.CourseDepartment;
-import uss.code.course.dto.common.CachedGeneralEducationCourses;
-import uss.code.course.dto.common.CachedMajorCourses;
+import uss.code.course.dto.common.CachedCourse;
+import uss.code.course.dto.common.CachedCourses;
 import uss.code.course.dto.common.CourseCapacity;
 import uss.code.course.dto.common.CourseCategory;
 import uss.code.course.dto.common.CourseTermInfo;
 import uss.code.course.dto.response.CourseAreaResponse;
 import uss.code.course.dto.response.CourseCategoriesResponse;
 import uss.code.course.dto.response.CourseCategoryResponse;
+import uss.code.course.dto.response.CourseResponse;
 import uss.code.course.dto.response.CourseTermResponse;
 import uss.code.course.dto.response.CourseTermsResponse;
-import uss.code.course.dto.response.GeneralEducationCourseResponse;
-import uss.code.course.dto.response.GeneralEducationCoursesResponse;
-import uss.code.course.dto.response.InterdisciplinaryMajorCourseResponse;
-import uss.code.course.dto.response.InterdisciplinaryMajorCoursesResponse;
+import uss.code.course.dto.response.CoursesResponse;
+import uss.code.course.dto.response.DepartmentResponse;
+import uss.code.course.dto.response.DepartmentsResponse;
 import uss.code.course.dto.response.InterdisciplinaryMajorResponse;
 import uss.code.course.dto.response.InterdisciplinaryMajorsResponse;
-import uss.code.course.dto.response.MajorCourseResponse;
-import uss.code.course.dto.response.MajorCoursesResponse;
-import uss.code.course.dto.response.SearchedCourseResponse;
-import uss.code.course.dto.response.SearchedCoursesResponse;
 import uss.code.course.infra.CourseCacheLoader;
+import uss.code.course.infra.SearchKeywordSanitizer;
 import uss.code.course.repository.CourseRepository;
 import uss.code.global.exception.domain.RestApiException;
 import uss.code.member.domain.Member;
 import uss.code.member.domain.MemberDepartment;
 import uss.code.member.repository.MemberRepository;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static uss.code.global.exception.domain.ExceptionCode.INVALID_GENERAL_EDUCATION_AREA;
 import static uss.code.global.exception.domain.ExceptionCode.MEMBER_NOT_FOUND;
 
 @Service
@@ -53,94 +54,81 @@ public class CourseService {
     private final MemberRepository memberRepository;
 
     @Transactional(readOnly = true)
-    public MajorCoursesResponse getMajorCourses(final long memberId) {
+    public CoursesResponse getMajorCourses(final long memberId) {
         final Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RestApiException(MEMBER_NOT_FOUND));
 
         final List<CourseDepartment> departments = CourseDepartment.ownedBy(member.getDepartment());
         if (departments.isEmpty()) {
-            return MajorCoursesResponse.of(List.of());
+            return CoursesResponse.of(List.of());
         }
 
-        final CachedMajorCourses cachedCourses = courseCacheLoader.loadMajorCourses(member.getDepartment());
+        final CachedCourses cachedCourses = courseCacheLoader.loadMajorCourses(member.getDepartment());
         final Map<Long, CourseCapacity> capacities = courseRepository.findCapacitiesByDepartmentIn(departments).stream()
                 .collect(toMap(CourseCapacity::id, identity()));
 
-        final List<MajorCourseResponse> majorCourseResponses = cachedCourses.courses().stream()
-                .filter(course -> capacities.containsKey(course.id()))
-                .map(course -> MajorCourseResponse.of(course, capacities.get(course.id()).isRegisterable()))
-                .toList();
-
-        return MajorCoursesResponse.of(majorCourseResponses);
+        return CoursesResponse.of(toCourseResponses(cachedCourses.courses(), capacities));
     }
 
     @Transactional(readOnly = true)
-    public GeneralEducationCoursesResponse getGeneralEducationCourses(final String courseArea) {
-        final CourseArea area = CourseArea.fromGeneralEducation(courseArea);
+    public CoursesResponse getGeneralEducationCourses(
+            final String classificationCode,
+            final String areaCode
+    ) {
+        final CourseClassification classification = CourseClassification.fromLiberalArtsScreen(classificationCode);
+        final Optional<CourseArea> area = resolveArea(classification, areaCode);
 
-        final CachedGeneralEducationCourses cachedCourses = courseCacheLoader.loadGeneralEducationCourses(area);
-        final Map<Long, CourseCapacity> capacities = courseRepository.findCapacitiesByArea(area).stream()
+        final CachedCourses cachedCourses = courseCacheLoader.loadGeneralEducationCourses(classification);
+        final Map<Long, CourseCapacity> capacities = courseRepository.findCapacitiesByClassificationCode(classification.getCode()).stream()
                 .collect(toMap(CourseCapacity::id, identity()));
 
-        final List<GeneralEducationCourseResponse> generalEducationCourseResponses = cachedCourses.courses().stream()
-                .filter(course -> capacities.containsKey(course.id()))
-                .map(course -> GeneralEducationCourseResponse.of(course, capacities.get(course.id()).isRegisterable()))
+        final List<CachedCourse> courses = cachedCourses.courses().stream()
+                .filter(course -> area.map(value -> value.getCode().equals(course.areaCode())).orElse(true))
                 .toList();
 
-        return GeneralEducationCoursesResponse.of(generalEducationCourseResponses);
+        return CoursesResponse.of(toCourseResponses(courses, capacities));
     }
 
     @Transactional(readOnly = true)
-    public MajorCoursesResponse getOtherDepartmentCourses(final String department) {
+    public CoursesResponse getOtherDepartmentCourses(final String department) {
         final MemberDepartment memberDepartment = MemberDepartment.from(department);
 
         final List<CourseDepartment> departments = CourseDepartment.ownedBy(memberDepartment);
         if (departments.isEmpty()) {
-            return MajorCoursesResponse.of(List.of());
+            return CoursesResponse.of(List.of());
         }
 
         final List<Course> courses = courseRepository.findByDepartmentIn(departments);
 
-        final List<MajorCourseResponse> majorCourseResponses = courses.stream()
-                .map(MajorCourseResponse::from)
-                .toList();
-
-        return MajorCoursesResponse.of(majorCourseResponses);
+        return CoursesResponse.of(toCourseResponses(courses));
     }
 
     @Transactional(readOnly = true)
-    public InterdisciplinaryMajorCoursesResponse getInterdisciplinaryMajorCourses(final String department) {
+    public CoursesResponse getInterdisciplinaryMajorCourses(final String department) {
         final CourseDepartment courseDepartment = CourseDepartment.fromInterdisciplinary(department);
 
         final List<Course> courses = courseRepository.findByDepartment(courseDepartment);
 
-        final List<InterdisciplinaryMajorCourseResponse> interdisciplinaryMajorCoursesResponses = courses.stream()
-                .map(InterdisciplinaryMajorCourseResponse::from)
-                .toList();
-
-        return InterdisciplinaryMajorCoursesResponse.of(interdisciplinaryMajorCoursesResponses);
+        return CoursesResponse.of(toCourseResponses(courses));
     }
 
     @Transactional(readOnly = true)
-    public SearchedCoursesResponse searchCourses(final String keyword) {
-        final List<Course> courses = courseRepository.findByKeyword(keyword);
+    public CoursesResponse searchCourses(final String keyword) {
+        final String sanitized = SearchKeywordSanitizer.sanitize(keyword);
+        if (sanitized.isEmpty()) {
+            return CoursesResponse.of(List.of());
+        }
 
-        final List<SearchedCourseResponse> searchedCourseResponses = courses.stream()
-                .map(SearchedCourseResponse::from)
-                .toList();
+        final List<Course> courses = courseRepository.findByKeyword(sanitized);
 
-        return SearchedCoursesResponse.of(searchedCourseResponses);
+        return CoursesResponse.of(toCourseResponses(courses));
     }
 
     @Transactional(readOnly = true)
-    public MajorCoursesResponse getHussCourses() {
+    public CoursesResponse getHussCourses() {
         final List<Course> courses = courseRepository.findHussCourses();
 
-        final List<MajorCourseResponse> majorCourseResponses = courses.stream()
-                .map(MajorCourseResponse::from)
-                .toList();
-
-        return MajorCoursesResponse.of(majorCourseResponses);
+        return CoursesResponse.of(toCourseResponses(courses));
     }
 
     @Transactional(readOnly = true)
@@ -181,5 +169,51 @@ public class CourseService {
                 .toList();
 
         return InterdisciplinaryMajorsResponse.of(interdisciplinaryMajorResponses);
+    }
+
+    @Transactional(readOnly = true)
+    public DepartmentsResponse getDepartments() {
+        final List<CourseDepartment> ownedDepartments = Arrays.stream(CourseDepartment.values())
+                .filter(CourseDepartment::hasOwner)
+                .toList();
+        final List<CourseDepartment> existingDepartments = courseRepository.findDepartmentsIn(ownedDepartments);
+
+        final List<DepartmentResponse> departmentResponses = Arrays.stream(MemberDepartment.values())
+                .filter(department -> CourseDepartment.ownedBy(department).stream().anyMatch(existingDepartments::contains))
+                .map(DepartmentResponse::from)
+                .toList();
+
+        return DepartmentsResponse.of(departmentResponses);
+    }
+
+    private Optional<CourseArea> resolveArea(
+            final CourseClassification classification,
+            final String areaCode
+    ) {
+        if (areaCode == null) {
+            return Optional.empty();
+        }
+
+        final CourseArea area = CourseArea.tryFromCode(areaCode)
+                .filter(classification::hasArea)
+                .orElseThrow(() -> new RestApiException(INVALID_GENERAL_EDUCATION_AREA));
+
+        return Optional.of(area);
+    }
+
+    private List<CourseResponse> toCourseResponses(
+            final List<CachedCourse> courses,
+            final Map<Long, CourseCapacity> capacities
+    ) {
+        return courses.stream()
+                .filter(course -> capacities.containsKey(course.id()))
+                .map(course -> CourseResponse.of(course, capacities.get(course.id())))
+                .toList();
+    }
+
+    private List<CourseResponse> toCourseResponses(final List<Course> courses) {
+        return courses.stream()
+                .map(CourseResponse::from)
+                .toList();
     }
 }

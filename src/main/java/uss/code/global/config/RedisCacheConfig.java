@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair;
-import uss.code.course.dto.common.CachedCourses;
+import uss.code.course.dto.internal.CachedCoursesDto;
 import uss.code.course.infra.CourseCacheLoader;
 import uss.code.global.exception.handler.CacheExceptionHandler;
 
@@ -32,7 +32,7 @@ public class RedisCacheConfig implements CachingConfigurer {
         return builder -> builder.withCacheConfiguration(
                 CourseCacheLoader.MAJOR_COURSES,
                 builder.cacheDefaults().serializeValuesWith(SerializationPair.fromSerializer(
-                        new JacksonJsonRedisSerializer<>(CachedCourses.class)))
+                        new JacksonJsonRedisSerializer<>(CachedCoursesDto.class)))
         );
     }
 
@@ -41,7 +41,7 @@ public class RedisCacheConfig implements CachingConfigurer {
         return builder -> builder.withCacheConfiguration(
                 CourseCacheLoader.GENERAL_EDUCATION_COURSES,
                 builder.cacheDefaults().serializeValuesWith(SerializationPair.fromSerializer(
-                        new JacksonJsonRedisSerializer<>(CachedCourses.class)))
+                        new JacksonJsonRedisSerializer<>(CachedCoursesDto.class)))
         );
     }
 

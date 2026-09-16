@@ -1,5 +1,6 @@
 package uss.code.admin.fixture;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 import uss.code.admin.domain.SystemSemester;
 import uss.code.course.domain.CourseTerm;
@@ -19,7 +20,7 @@ public class SystemSemesterFixture {
             final int academicYear,
             final CourseTerm term
     ) {
-        SystemSemester systemSemester = new SystemSemester();
+        SystemSemester systemSemester = BeanUtils.instantiateClass(SystemSemester.class);
 
         ReflectionTestUtils.setField(systemSemester, "academicYear", academicYear);
         ReflectionTestUtils.setField(systemSemester, "term", term);

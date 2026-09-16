@@ -127,7 +127,7 @@ public class RegistrationService {
             final long courseId
     ) {
         boolean exists = registrations.stream()
-                .anyMatch(registration -> registration.getCourse().getId().equals(courseId));
+                .anyMatch(registration -> registration.getCourse().getId() == courseId);
 
         if (exists) {
             throw new RestApiException(COURSE_ALREADY_REGISTERED);

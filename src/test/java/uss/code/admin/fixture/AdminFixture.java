@@ -1,6 +1,7 @@
 package uss.code.admin.fixture;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.BeanUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 import uss.code.admin.domain.Admin;
 import uss.code.admin.domain.AdminRole;
@@ -24,7 +25,7 @@ public class AdminFixture {
             final String rawPassword,
             final String name
     ) {
-        Admin admin = new Admin();
+        Admin admin = BeanUtils.instantiateClass(Admin.class);
 
         ReflectionTestUtils.setField(admin, "loginId", loginId);
         ReflectionTestUtils.setField(admin, "password", encode(rawPassword));

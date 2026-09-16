@@ -1,5 +1,6 @@
 package uss.code.course.fixture;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 import uss.code.course.domain.Course;
 import uss.code.course.domain.CourseArea;
@@ -148,7 +149,7 @@ public class CourseFixture {
             final int maxCapacity,
             final int currentEnrollment
     ) {
-        Course course = new Course();
+        Course course = BeanUtils.instantiateClass(Course.class);
 
         ReflectionTestUtils.setField(course, "schedules", new ArrayList<CourseSchedule>());
         ReflectionTestUtils.setField(course, "academicYear", DEFAULT_ACADEMIC_YEAR);

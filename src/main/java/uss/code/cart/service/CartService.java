@@ -129,7 +129,7 @@ public class CartService {
             final long courseId
     ) {
         boolean exists = carts.stream()
-                .anyMatch(cart -> cart.getCourse().getId().equals(courseId));
+                .anyMatch(cart -> cart.getCourse().getId() == courseId);
 
         if (exists) {
             throw new RestApiException(COURSE_ALREADY_IN_CART);

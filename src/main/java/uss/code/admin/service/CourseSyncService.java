@@ -12,7 +12,7 @@ import uss.code.admin.domain.CourseSyncDetail;
 import uss.code.admin.domain.CourseSyncJob;
 import uss.code.admin.domain.SyncChangeType;
 import uss.code.admin.domain.SyncStrategy;
-import uss.code.admin.dto.common.SemesterRef;
+import uss.code.admin.dto.internal.SemesterRefDto;
 import uss.code.admin.dto.common.SyncDeleteCounts;
 import uss.code.admin.dto.request.SyncJobCreateRequest;
 import uss.code.admin.dto.request.SyncPreflightRequest;
@@ -27,7 +27,7 @@ import uss.code.admin.repository.CourseSyncDetailRepository;
 import uss.code.admin.repository.CourseSyncJobRepository;
 import uss.code.cart.repository.CartRepository;
 import uss.code.course.domain.CourseTerm;
-import uss.code.course.dto.common.CourseTermInfo;
+import uss.code.course.dto.internal.CourseTermInfoDto;
 import uss.code.course.repository.CourseRepository;
 import uss.code.course.repository.CourseScheduleRepository;
 import uss.code.global.dto.response.PageResponse;
@@ -66,13 +66,13 @@ public class CourseSyncService {
 
     @Transactional(readOnly = true)
     public SyncPreflightResponse preflight(final SyncPreflightRequest request) {
-        final Optional<SemesterRef> loadedSemester = findLoadedSemester();
+        final Optional<SemesterRefDto> loadedSemester = findLoadedSemester();
         final SyncStrategy strategy = judgeStrategy(loadedSemester, request.academicYear(), request.term());
 
         return SyncPreflightResponse.of(
                 strategy,
                 loadedSemester.orElse(null),
-                SemesterRef.of(request.academicYear(), request.term()),
+                SemesterRefDto.of(request.academicYear(), request.term()),
                 countDeletions(strategy, loadedSemester)
         );
     }
@@ -141,7 +141,7 @@ public class CourseSyncService {
     }
 
     private SyncStrategy judgeStrategy(
-            final Optional<SemesterRef> loadedSemester,
+            final Optional<SemesterRefDto> loadedSemester,
             final int academicYear,
             final CourseTerm term
     ) {
@@ -158,13 +158,13 @@ public class CourseSyncService {
 
     private SyncDeleteCounts countDeletions(
             final SyncStrategy strategy,
-            final Optional<SemesterRef> loadedSemester
+            final Optional<SemesterRefDto> loadedSemester
     ) {
         if (strategy != REPLACE || loadedSemester.isEmpty()) {
             return SyncDeleteCounts.empty();
         }
 
-        final SemesterRef semester = loadedSemester.get();
+        final SemesterRefDto semester = loadedSemester.get();
         final int academicYear = semester.academicYear();
         final CourseTerm term = semester.term();
 
@@ -176,16 +176,16 @@ public class CourseSyncService {
         );
     }
 
-    private Optional<SemesterRef> findLoadedSemester() {
-        final List<CourseTermInfo> loadedSemesters = courseRepository.findTerms();
+    private Optional<SemesterRefDto> findLoadedSemester() {
+        final List<CourseTermInfoDto> loadedSemesters = courseRepository.findTerms();
 
         if (loadedSemesters.isEmpty()) {
             return Optional.empty();
         }
 
-        final CourseTermInfo loaded = loadedSemesters.get(0);
+        final CourseTermInfoDto loaded = loadedSemesters.get(0);
 
-        return Optional.of(SemesterRef.of(loaded.academicYear(), loaded.term()));
+        return Optional.of(SemesterRefDto.of(loaded.academicYear(), loaded.term()));
     }
 
     private Pageable toPageable(final int page) {

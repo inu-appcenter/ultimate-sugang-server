@@ -7,11 +7,11 @@ import uss.code.course.domain.Course;
 import uss.code.course.domain.CourseArea;
 import uss.code.course.domain.CourseClassification;
 import uss.code.course.domain.CourseDepartment;
-import uss.code.course.dto.common.CachedCourse;
-import uss.code.course.dto.common.CachedCourses;
-import uss.code.course.dto.common.CourseCapacity;
-import uss.code.course.dto.common.CourseCategory;
-import uss.code.course.dto.common.CourseTermInfo;
+import uss.code.course.dto.internal.CachedCourseDto;
+import uss.code.course.dto.internal.CachedCoursesDto;
+import uss.code.course.dto.internal.CourseCapacityDto;
+import uss.code.course.dto.internal.CourseCategoryDto;
+import uss.code.course.dto.internal.CourseTermInfoDto;
 import uss.code.course.dto.response.CourseAreaResponse;
 import uss.code.course.dto.response.CourseCategoriesResponse;
 import uss.code.course.dto.response.CourseCategoryResponse;
@@ -61,9 +61,9 @@ public class CourseService {
             return CoursesResponse.of(List.of());
         }
 
-        final CachedCourses cachedCourses = courseCacheLoader.loadMajorCourses(member.getDepartment());
-        final Map<Long, CourseCapacity> capacities = courseRepository.findCapacitiesByDepartmentIn(departments).stream()
-                .collect(toMap(CourseCapacity::id, identity()));
+        final CachedCoursesDto cachedCourses = courseCacheLoader.loadMajorCourses(member.getDepartment());
+        final Map<Long, CourseCapacityDto> capacities = courseRepository.findCapacitiesByDepartmentIn(departments).stream()
+                .collect(toMap(CourseCapacityDto::id, identity()));
 
         return CoursesResponse.of(toCourseResponses(cachedCourses.courses(), capacities));
     }
@@ -76,11 +76,11 @@ public class CourseService {
         final CourseClassification classification = CourseClassification.fromLiberalArtsScreen(classificationCode);
         final Optional<CourseArea> area = resolveArea(classification, areaCode);
 
-        final CachedCourses cachedCourses = courseCacheLoader.loadGeneralEducationCourses(classification);
-        final Map<Long, CourseCapacity> capacities = courseRepository.findCapacitiesByClassificationCode(classification.getCode()).stream()
-                .collect(toMap(CourseCapacity::id, identity()));
+        final CachedCoursesDto cachedCourses = courseCacheLoader.loadGeneralEducationCourses(classification);
+        final Map<Long, CourseCapacityDto> capacities = courseRepository.findCapacitiesByClassificationCode(classification.getCode()).stream()
+                .collect(toMap(CourseCapacityDto::id, identity()));
 
-        final List<CachedCourse> courses = cachedCourses.courses().stream()
+        final List<CachedCourseDto> courses = cachedCourses.courses().stream()
                 .filter(course -> area.map(value -> value.getCode().equals(course.areaCode())).orElse(true))
                 .toList();
 
@@ -126,8 +126,8 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public CourseCategoriesResponse getCategories() {
-        final Map<String, List<CourseCategory>> areasByClassification = courseRepository.findCategories().stream()
-                .collect(groupingBy(CourseCategory::classificationCode, LinkedHashMap::new, toList()));
+        final Map<String, List<CourseCategoryDto>> areasByClassification = courseRepository.findCategories().stream()
+                .collect(groupingBy(CourseCategoryDto::classificationCode, LinkedHashMap::new, toList()));
 
         final List<CourseCategoryResponse> categoryResponses = areasByClassification.values().stream()
                 .map(areas -> CourseCategoryResponse.of(
@@ -142,7 +142,7 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public CourseTermsResponse getTerms() {
-        final List<CourseTermInfo> termInfos = courseRepository.findTerms();
+        final List<CourseTermInfoDto> termInfos = courseRepository.findTerms();
 
         final List<CourseTermResponse> termResponses = termInfos.stream()
                 .map(CourseTermResponse::from)
@@ -185,8 +185,8 @@ public class CourseService {
     }
 
     private List<CourseResponse> toCourseResponses(
-            final List<CachedCourse> courses,
-            final Map<Long, CourseCapacity> capacities
+            final List<CachedCourseDto> courses,
+            final Map<Long, CourseCapacityDto> capacities
     ) {
         return courses.stream()
                 .filter(course -> capacities.containsKey(course.id()))

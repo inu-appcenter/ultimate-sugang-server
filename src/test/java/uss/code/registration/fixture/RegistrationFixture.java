@@ -1,5 +1,6 @@
 package uss.code.registration.fixture;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 import uss.code.course.domain.Course;
 import uss.code.member.domain.Member;
@@ -18,7 +19,7 @@ public class RegistrationFixture {
             final Course course,
             final LocalDateTime createdAt
     ) {
-        Registration registration = new Registration();
+        Registration registration = BeanUtils.instantiateClass(Registration.class);
 
         ReflectionTestUtils.setField(registration, "member", member);
         ReflectionTestUtils.setField(registration, "course", course);

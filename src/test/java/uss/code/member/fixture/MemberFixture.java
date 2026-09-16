@@ -1,5 +1,6 @@
 package uss.code.member.fixture;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 import uss.code.member.domain.AcademicStatus;
 import uss.code.member.domain.Member;
@@ -66,7 +67,7 @@ public class MemberFixture {
             final AcademicStatus academicStatus,
             final double lastSemesterGpa
     ) {
-        Member member = new Member();
+        Member member = BeanUtils.instantiateClass(Member.class);
 
         ReflectionTestUtils.setField(member, "email", email);
         ReflectionTestUtils.setField(member, "password", password);

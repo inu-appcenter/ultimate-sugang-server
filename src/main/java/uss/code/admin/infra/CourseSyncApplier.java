@@ -16,7 +16,7 @@ import uss.code.course.domain.CourseFieldChange;
 import uss.code.course.domain.CourseSchedule;
 import uss.code.course.domain.CourseSnapshot;
 import uss.code.course.domain.CourseTerm;
-import uss.code.course.dto.common.CourseTermInfo;
+import uss.code.course.dto.internal.CourseTermInfoDto;
 import uss.code.course.infra.CourseScheduleFormatter;
 import uss.code.course.repository.CourseRepository;
 import uss.code.course.repository.CourseScheduleRepository;
@@ -138,7 +138,7 @@ public class CourseSyncApplier {
             return;
         }
 
-        for (final CourseTermInfo semester : courseRepository.findTerms()) {
+        for (final CourseTermInfoDto semester : courseRepository.findTerms()) {
             final int academicYear = semester.academicYear();
             final CourseTerm term = semester.term();
 

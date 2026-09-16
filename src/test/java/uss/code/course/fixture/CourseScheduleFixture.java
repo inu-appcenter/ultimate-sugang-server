@@ -1,5 +1,6 @@
 package uss.code.course.fixture;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 import uss.code.course.domain.Course;
 import uss.code.course.domain.CourseDay;
@@ -57,7 +58,7 @@ public class CourseScheduleFixture {
             final LocalTime startTime,
             final LocalTime endTime
     ) {
-        CourseSchedule courseSchedule = new CourseSchedule();
+        CourseSchedule courseSchedule = BeanUtils.instantiateClass(CourseSchedule.class);
         ReflectionTestUtils.setField(courseSchedule, "course", course);
         ReflectionTestUtils.setField(courseSchedule, "dayOfWeek", dayOfWeek);
         ReflectionTestUtils.setField(courseSchedule, "periodCode", DEFAULT_PERIOD_CODE);

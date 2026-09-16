@@ -1,5 +1,6 @@
 package uss.code.cart.fixture;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 import uss.code.cart.domain.Cart;
 import uss.code.course.domain.Course;
@@ -18,7 +19,7 @@ public class CartFixture {
             final Course course,
             final LocalDateTime createdAt
     ) {
-        Cart cart = new Cart();
+        Cart cart = BeanUtils.instantiateClass(Cart.class);
         ReflectionTestUtils.setField(cart, "member", member);
         ReflectionTestUtils.setField(cart, "course", course);
         ReflectionTestUtils.setField(cart, "createdAt", createdAt);

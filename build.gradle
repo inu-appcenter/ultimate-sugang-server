@@ -1,5 +1,9 @@
 plugins {
     id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '2.2.21'
+    id 'org.jetbrains.kotlin.plugin.spring' version '2.2.21'
+    id 'org.jetbrains.kotlin.plugin.jpa' version '2.2.21'
+    id 'org.jetbrains.kotlin.plugin.lombok' version '2.2.21'
     id 'org.springframework.boot' version '4.0.1'
     id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -14,6 +18,18 @@ java {
     }
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll '-Xjsr305=strict'
+    }
+}
+
+allOpen {
+    annotation 'jakarta.persistence.Entity'
+    annotation 'jakarta.persistence.MappedSuperclass'
+    annotation 'jakarta.persistence.Embeddable'
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -25,6 +41,10 @@ repositories {
 }
 
 dependencies {
+    // Kotlin
+    implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation 'tools.jackson.module:jackson-module-kotlin'
+
     // Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
 

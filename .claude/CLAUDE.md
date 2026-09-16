@@ -58,12 +58,16 @@ ext4를 쓰는 CI(Linux)에서는 나지 않으므로 CI 워크플로는 그대�
 - 프로젝트 구조 (패키지 배치) → `project-structure.md`
 - Flyway 마이그레이션 / SQL → `migration.md`
 - 코드 컨벤션 → `code-convention/`
-  - 공통 (네이밍, 포맷팅, 예외, 객체 생성, 상수, 레이어 흐름) → `common.md`
-  - Entity(domain) + DB 매핑 → `domain.md`
-  - DTO(Request/Response) → `dto.md`
-  - Controller → `controller.md`
-  - Service → `service.md`
-  - Repository → `repository.md`
+  - Java → `java/` (`src/main/java`에 적용)
+    - 공통 (네이밍, 포맷팅, 예외, 객체 생성, 상수, 레이어 흐름) → `common.md`
+    - Entity(domain) + DB 매핑 → `domain.md`
+    - DTO(Request/Response) → `dto.md`
+    - Controller → `controller.md`
+    - Service → `service.md`
+    - Repository → `repository.md`
+  - Kotlin → `kotlin/` (Java 규칙을 계승, `src/main/kotlin`에 적용)
+    - 파일 구성은 Java와 같다 (`common.md`, `domain.md`, `dto.md`, `controller.md`, `service.md`, `repository.md`)
+    - Java 공존 기간 상호운용 → `interop.md` (전환 완료 후 제거)
 
 `.claude/spec/` — 스킬·작업에서 필요할 때만 참조 (자동 로드 아님)
 

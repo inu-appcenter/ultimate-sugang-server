@@ -62,6 +62,6 @@ public class AuthController implements AuthControllerDocs {
     public ResponseEntity<AuthTokenResponse> reIssue(
             @RequestHeader(value = ACCESS_TOKEN_HEADER, required = false) final String accessToken
     ){
-        return ResponseEntity.status(OK).body(authService.reIssue(accessToken));
+        return ResponseEntity.status(OK).body(authService.reissue(accessToken));
     }
 }

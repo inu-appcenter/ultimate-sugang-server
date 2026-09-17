@@ -129,7 +129,7 @@ class AuthServiceTest {
             //then
             assertThat(response.accessToken()).isNotBlank();
 
-            final Member member = memberRepository.findByEmail(TEST_EMAIL).orElseThrow();
+            final Member member = memberRepository.findByEmail(TEST_EMAIL);
             assertThat(jwtProvider.getMemberId(response.accessToken())).isEqualTo(member.getId());
             assertThat(member.getCollege()).isEqualTo(MemberCollege.INFORMATION_TECHNOLOGY);
         }
@@ -143,7 +143,7 @@ class AuthServiceTest {
             authService.signUp(request);
 
             //then
-            final Member member = memberRepository.findByEmail(TEST_EMAIL).orElseThrow();
+            final Member member = memberRepository.findByEmail(TEST_EMAIL);
             assertThat(member.getPassword()).isNotEqualTo(TEST_RAW_PASSWORD);
             assertThat(passwordEncoder.matches(TEST_RAW_PASSWORD, member.getPassword())).isTrue();
         }
@@ -277,7 +277,7 @@ class AuthServiceTest {
             //then
             assertThat(response.accessToken()).isNotBlank();
 
-            final Member member = memberRepository.findByStudentId(TEST_STUDENT_ID).orElseThrow();
+            final Member member = memberRepository.findByStudentId(TEST_STUDENT_ID);
             assertThat(jwtProvider.getMemberId(response.accessToken())).isEqualTo(member.getId());
         }
 
@@ -335,7 +335,7 @@ class AuthServiceTest {
                     .hasFieldOrPropertyWithValue("code", EXPIRED_ACCESS_TOKEN.getCode());
 
             //when
-            final AuthTokenResponse response = authService.reIssue(expiredToken);
+            final AuthTokenResponse response = authService.reissue(expiredToken);
 
             //then
             assertThat(response.accessToken()).isNotBlank();
@@ -351,7 +351,7 @@ class AuthServiceTest {
             final String validToken = jwtProvider.generateAuthToken(savedMemberId).accessToken();
 
             //when
-            final AuthTokenResponse response = authService.reIssue(validToken);
+            final AuthTokenResponse response = authService.reissue(validToken);
 
             //then
             assertThat(jwtProvider.getMemberId(response.accessToken())).isEqualTo(savedMemberId);
@@ -364,7 +364,7 @@ class AuthServiceTest {
             //given
 
             //when & then
-            assertThatThrownBy(() -> authService.reIssue(null))
+            assertThatThrownBy(() -> authService.reissue(null))
                     .isInstanceOf(JwtTokenMissingException.class)
                     .hasFieldOrPropertyWithValue("code", MISSING_ACCESS_TOKEN.getCode());
         }
@@ -375,7 +375,7 @@ class AuthServiceTest {
             final String otherKeyToken = generateTokenSignedWithOtherKey(savedMemberId);
 
             //when & then
-            assertThatThrownBy(() -> authService.reIssue(otherKeyToken))
+            assertThatThrownBy(() -> authService.reissue(otherKeyToken))
                     .isInstanceOf(JwtTokenInvalidException.class)
                     .hasFieldOrPropertyWithValue("code", INVALID_SIGNATURE_ACCESS_TOKEN.getCode());
         }
@@ -385,7 +385,7 @@ class AuthServiceTest {
             //given
 
             //when & then
-            assertThatThrownBy(() -> authService.reIssue(MALFORMED_TOKEN))
+            assertThatThrownBy(() -> authService.reissue(MALFORMED_TOKEN))
                     .isInstanceOf(JwtTokenInvalidException.class)
                     .hasFieldOrPropertyWithValue("code", INVALID_FORM_ACCESS_TOKEN.getCode());
         }
@@ -396,7 +396,7 @@ class AuthServiceTest {
             final String unknownMemberToken = generateExpiredToken(UNKNOWN_MEMBER_ID);
 
             //when & then
-            assertThatThrownBy(() -> authService.reIssue(unknownMemberToken))
+            assertThatThrownBy(() -> authService.reissue(unknownMemberToken))
                     .isInstanceOf(RestApiException.class)
                     .hasFieldOrPropertyWithValue("exceptionCode", MEMBER_NOT_FOUND);
         }

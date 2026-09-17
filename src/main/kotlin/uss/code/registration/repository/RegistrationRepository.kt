@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import uss.code.course.domain.CourseTerm
 import uss.code.registration.domain.Registration
-import java.util.Optional
 
 interface RegistrationRepository : JpaRepository<Registration, Long> {
     @Query("""
@@ -25,7 +24,7 @@ interface RegistrationRepository : JpaRepository<Registration, Long> {
     fun findByMemberIdAndCourseId(
         @Param("memberId") memberId: Long,
         @Param("courseId") courseId: Long,
-    ): Optional<Registration>
+    ): Registration?
 
     @Query("""
         SELECT COUNT(r)

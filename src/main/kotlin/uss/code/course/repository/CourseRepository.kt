@@ -10,7 +10,6 @@ import uss.code.course.domain.CourseTerm
 import uss.code.course.dto.internal.CourseCapacityDto
 import uss.code.course.dto.internal.CourseCategoryDto
 import uss.code.course.dto.internal.CourseTermInfoDto
-import java.util.Optional
 
 interface CourseRepository : JpaRepository<Course, Long> {
     @Query("""
@@ -73,7 +72,7 @@ interface CourseRepository : JpaRepository<Course, Long> {
         LEFT JOIN FETCH c.schedules
         WHERE c.id = :id
     """)
-    fun findByIdWithSchedules(@Param("id") id: Long): Optional<Course>
+    fun findByIdWithSchedules(@Param("id") id: Long): Course?
 
     @Query("""
         SELECT DISTINCT new uss.code.course.dto.internal.CourseCategoryDto(

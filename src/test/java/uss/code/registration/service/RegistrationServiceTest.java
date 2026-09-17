@@ -907,7 +907,7 @@ class RegistrationServiceTest {
             registrationService.deleteRegisteredCourse(testMemberId, course.getId());
 
             //then
-            assertThat(registrationRepository.findByMemberIdAndCourseId(testMemberId, course.getId())).isEmpty();
+            assertThat(registrationRepository.findByMemberIdAndCourseId(testMemberId, course.getId())).isNull();
         }
     }
 

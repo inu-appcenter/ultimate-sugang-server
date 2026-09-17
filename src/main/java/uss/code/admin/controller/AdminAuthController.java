@@ -30,6 +30,6 @@ public class AdminAuthController implements AdminAuthControllerDocs {
     public ResponseEntity<AdminTokenResponse> refresh(
             @RequestHeader(value = ACCESS_TOKEN_HEADER, required = false) final String accessToken
     ) {
-        return ResponseEntity.ok(adminAuthService.reIssue(accessToken));
+        return ResponseEntity.ok(adminAuthService.reissue(accessToken));
     }
 }

@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import uss.code.cart.domain.Cart
 import uss.code.course.domain.CourseTerm
-import java.util.Optional
 
 interface CartRepository : JpaRepository<Cart, Long> {
     @Query("""
@@ -28,7 +27,7 @@ interface CartRepository : JpaRepository<Cart, Long> {
     fun findByMemberIdAndCourseId(
         @Param("memberId") memberId: Long,
         @Param("courseId") courseId: Long,
-    ): Optional<Cart>
+    ): Cart?
 
     @Query("""
         SELECT COUNT(c)

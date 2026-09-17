@@ -135,7 +135,7 @@ class AdminAuthServiceTest {
             final String accessToken = jwtProvider.generateAdminToken(savedAdmin.getId());
 
             //when
-            final AdminTokenResponse response = adminAuthService.reIssue(accessToken);
+            final AdminTokenResponse response = adminAuthService.reissue(accessToken);
 
             //then
             assertThat(response.accessToken()).isNotBlank();
@@ -148,7 +148,7 @@ class AdminAuthServiceTest {
             final String expiredToken = generateExpiredAdminToken(savedAdmin.getId());
 
             //when
-            final AdminTokenResponse response = adminAuthService.reIssue(expiredToken);
+            final AdminTokenResponse response = adminAuthService.reissue(expiredToken);
 
             //then
             assertThat(response.accessToken()).isNotBlank();
@@ -158,7 +158,7 @@ class AdminAuthServiceTest {
         @Test
         void 토큰이_없으면_예외가_발생한다() {
             //when & then
-            assertThatThrownBy(() -> adminAuthService.reIssue(null))
+            assertThatThrownBy(() -> adminAuthService.reissue(null))
                     .isInstanceOf(JwtTokenMissingException.class)
                     .hasFieldOrPropertyWithValue("code", MISSING_ACCESS_TOKEN.getCode());
         }
@@ -166,7 +166,7 @@ class AdminAuthServiceTest {
         @Test
         void 형식이_올바르지_않은_토큰이면_예외가_발생한다() {
             //when & then
-            assertThatThrownBy(() -> adminAuthService.reIssue(MALFORMED_TOKEN))
+            assertThatThrownBy(() -> adminAuthService.reissue(MALFORMED_TOKEN))
                     .isInstanceOf(JwtTokenInvalidException.class)
                     .hasFieldOrPropertyWithValue("code", INVALID_FORM_ACCESS_TOKEN.getCode());
         }
@@ -177,7 +177,7 @@ class AdminAuthServiceTest {
             final String otherKeyToken = generateAdminTokenSignedWithOtherKey(savedAdmin.getId());
 
             //when & then
-            assertThatThrownBy(() -> adminAuthService.reIssue(otherKeyToken))
+            assertThatThrownBy(() -> adminAuthService.reissue(otherKeyToken))
                     .isInstanceOf(JwtTokenInvalidException.class)
                     .hasFieldOrPropertyWithValue("code", INVALID_SIGNATURE_ACCESS_TOKEN.getCode());
         }
@@ -188,7 +188,7 @@ class AdminAuthServiceTest {
             final String memberToken = jwtProvider.generateAuthToken(savedAdmin.getId()).accessToken();
 
             //when & then
-            assertThatThrownBy(() -> adminAuthService.reIssue(memberToken))
+            assertThatThrownBy(() -> adminAuthService.reissue(memberToken))
                     .isInstanceOf(RestApiException.class)
                     .hasFieldOrPropertyWithValue("exceptionCode", ADMIN_ACCESS_DENIED);
         }
@@ -199,7 +199,7 @@ class AdminAuthServiceTest {
             final String accessToken = jwtProvider.generateAdminToken(savedAdmin.getId() + 999L);
 
             //when & then
-            assertThatThrownBy(() -> adminAuthService.reIssue(accessToken))
+            assertThatThrownBy(() -> adminAuthService.reissue(accessToken))
                     .isInstanceOf(RestApiException.class)
                     .hasFieldOrPropertyWithValue("exceptionCode", ADMIN_NOT_FOUND);
         }

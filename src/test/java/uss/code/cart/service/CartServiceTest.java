@@ -784,7 +784,7 @@ class CartServiceTest {
             cartService.deleteCartedCourse(testMemberId, course.getId());
 
             //then
-            assertThat(cartRepository.findByMemberIdAndCourseId(testMemberId, course.getId())).isEmpty();
+            assertThat(cartRepository.findByMemberIdAndCourseId(testMemberId, course.getId())).isNull();
         }
     }
 
@@ -879,7 +879,7 @@ class CartServiceTest {
 
             //then
             assertThat(cartCountOf(courseId)).isEqualTo(1);
-            assertThat(cartRepository.findByMemberIdAndCourseId(testMemberId, courseId)).isPresent();
+            assertThat(cartRepository.findByMemberIdAndCourseId(testMemberId, courseId)).isNotNull();
         }
 
         @Test
@@ -906,7 +906,7 @@ class CartServiceTest {
                     .isInstanceOf(RestApiException.class);
 
             //then
-            assertThat(cartRepository.findByMemberIdAndCourseId(testMemberId, courseId)).isPresent();
+            assertThat(cartRepository.findByMemberIdAndCourseId(testMemberId, courseId)).isNotNull();
         }
 
         @Test

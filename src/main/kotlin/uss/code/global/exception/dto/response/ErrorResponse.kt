@@ -10,9 +10,11 @@ data class ErrorResponse(
         fun of(
             code: String,
             message: String,
-        ): ErrorResponse = ErrorResponse(
-            code = code,
-            message = message,
-        )
+        ): ErrorResponse {
+            return ErrorResponse(
+                code = code,
+                message = message,
+            )
+        }
     }
 }

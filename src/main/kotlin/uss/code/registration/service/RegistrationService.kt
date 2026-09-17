@@ -30,7 +30,6 @@ import uss.code.registration.repository.RegistrationRepository
 @Service
 class RegistrationService(
     private val registrationRepository: RegistrationRepository,
-
     private val memberRepository: MemberRepository,
     private val courseRepository: CourseRepository,
 ) {

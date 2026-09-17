@@ -42,7 +42,9 @@ class Admin private constructor(
     var createdAt: LocalDateTime = LocalDateTime.now()
         protected set
 
-    fun isAdmin(): Boolean = role == ADMIN
+    fun isAdmin(): Boolean {
+        return role == ADMIN
+    }
 
     companion object {
         @JvmStatic
@@ -50,10 +52,12 @@ class Admin private constructor(
             loginId: String,
             encodedPassword: String,
             name: String,
-        ): Admin = Admin(
-            loginId = loginId,
-            password = encodedPassword,
-            name = name,
-        )
+        ): Admin {
+            return Admin(
+                loginId = loginId,
+                password = encodedPassword,
+                name = name,
+            )
+        }
     }
 }

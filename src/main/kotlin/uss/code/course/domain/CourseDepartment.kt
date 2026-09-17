@@ -166,44 +166,58 @@ enum class CourseDepartment(
     CREATIVE_DESIGN("0000616", CourseCollege.ETC, "창의적디자인연계전공", kind = CourseDepartmentKind.INTERDISCIPLINARY),
     ANTIBODY_ENGINEERING("", CourseCollege.ETC, "항체공학연계전공", kind = CourseDepartmentKind.INTERDISCIPLINARY);
 
-    fun hasOwner(): Boolean = owner != null
+    fun hasOwner(): Boolean {
+        return owner != null
+    }
 
-    fun isNight(): Boolean = displayName.endsWith(NIGHT_NAME_SUFFIX)
+    fun isNight(): Boolean {
+        return displayName.endsWith(NIGHT_NAME_SUFFIX)
+    }
 
-    fun isDepartment(): Boolean = kind == CourseDepartmentKind.DEPARTMENT
+    fun isDepartment(): Boolean {
+        return kind == CourseDepartmentKind.DEPARTMENT
+    }
 
-    fun isInterdisciplinary(): Boolean = kind == CourseDepartmentKind.INTERDISCIPLINARY
+    fun isInterdisciplinary(): Boolean {
+        return kind == CourseDepartmentKind.INTERDISCIPLINARY
+    }
 
     companion object {
         private const val NIGHT_NAME_SUFFIX = "(야)"
 
         @JvmStatic
-        fun tryFromCode(code: String?): Optional<CourseDepartment> =
-            Optional.ofNullable(entries.firstOrNull { it.code.isNotBlank() && it.code == code })
+        fun tryFromCode(code: String?): Optional<CourseDepartment> {
+            return Optional.ofNullable(entries.firstOrNull { it.code.isNotBlank() && it.code == code })
+        }
 
         @JvmStatic
-        fun fromCode(code: String): CourseDepartment =
-            tryFromCode(code).orElseThrow { RestApiException(INVALID_ENUM_TYPE) }
+        fun fromCode(code: String): CourseDepartment {
+            return tryFromCode(code).orElseThrow { RestApiException(INVALID_ENUM_TYPE) }
+        }
 
         @JvmStatic
-        fun from(courseDepartment: String): CourseDepartment =
-            try {
+        fun from(courseDepartment: String): CourseDepartment {
+            return try {
                 valueOf(courseDepartment.uppercase())
             } catch (e: IllegalArgumentException) {
                 throw RestApiException(INVALID_ENUM_TYPE)
             }
+        }
 
         @JvmStatic
-        fun ownedBy(memberDepartment: MemberDepartment): List<CourseDepartment> =
-            entries.filter { it.owner == memberDepartment }
+        fun ownedBy(memberDepartment: MemberDepartment): List<CourseDepartment> {
+            return entries.filter { it.owner == memberDepartment }
+        }
 
         @JvmStatic
-        fun departmentValues(): List<CourseDepartment> =
-            valuesOf(CourseDepartmentKind.DEPARTMENT)
+        fun departmentValues(): List<CourseDepartment> {
+            return valuesOf(CourseDepartmentKind.DEPARTMENT)
+        }
 
         @JvmStatic
-        fun interdisciplinaryValues(): List<CourseDepartment> =
-            valuesOf(CourseDepartmentKind.INTERDISCIPLINARY)
+        fun interdisciplinaryValues(): List<CourseDepartment> {
+            return valuesOf(CourseDepartmentKind.INTERDISCIPLINARY)
+        }
 
         @JvmStatic
         fun fromDepartment(department: String): CourseDepartment {
@@ -227,7 +241,8 @@ enum class CourseDepartment(
             return courseDepartment
         }
 
-        private fun valuesOf(kind: CourseDepartmentKind): List<CourseDepartment> =
-            entries.filter { it.kind == kind }
+        private fun valuesOf(kind: CourseDepartmentKind): List<CourseDepartment> {
+            return entries.filter { it.kind == kind }
+        }
     }
 }

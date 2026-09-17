@@ -25,12 +25,14 @@ data class RegistrationCourseResponse(
             registration: Registration,
             studentId: String,
             resolvedType: String,
-        ): RegistrationCourseResponse = RegistrationCourseResponse(
-            studentId = studentId,
-            resolvedType = resolvedType,
-            reAttendance = NO_RE_ATTENDANCE,
-            createdAt = registration.createdAt.format(CREATED_AT_FORMAT),
-            courseResponse = CourseResponse.from(registration.course),
-        )
+        ): RegistrationCourseResponse {
+            return RegistrationCourseResponse(
+                studentId = studentId,
+                resolvedType = resolvedType,
+                reAttendance = NO_RE_ATTENDANCE,
+                createdAt = registration.createdAt.format(CREATED_AT_FORMAT),
+                courseResponse = CourseResponse.from(registration.course),
+            )
+        }
     }
 }

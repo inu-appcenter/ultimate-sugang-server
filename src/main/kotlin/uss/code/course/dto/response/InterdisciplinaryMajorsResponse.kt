@@ -8,8 +8,10 @@ data class InterdisciplinaryMajorsResponse(
         @JvmStatic
         fun of(
             interdisciplinaryMajorResponses: List<InterdisciplinaryMajorResponse>,
-        ): InterdisciplinaryMajorsResponse = InterdisciplinaryMajorsResponse(
-            interdisciplinaryMajorResponses = interdisciplinaryMajorResponses,
-        )
+        ): InterdisciplinaryMajorsResponse {
+            return InterdisciplinaryMajorsResponse(
+                interdisciplinaryMajorResponses = interdisciplinaryMajorResponses,
+            )
+        }
     }
 }

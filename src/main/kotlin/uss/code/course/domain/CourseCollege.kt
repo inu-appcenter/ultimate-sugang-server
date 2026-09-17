@@ -31,11 +31,13 @@ enum class CourseCollege(
 
     companion object {
         @JvmStatic
-        fun tryFromCode(code: String?): Optional<CourseCollege> =
-            Optional.ofNullable(entries.firstOrNull { it.code.isNotBlank() && it.code == code })
+        fun tryFromCode(code: String?): Optional<CourseCollege> {
+            return Optional.ofNullable(entries.firstOrNull { it.code.isNotBlank() && it.code == code })
+        }
 
         @JvmStatic
-        fun fromCode(code: String): CourseCollege =
-            tryFromCode(code).orElseThrow { RestApiException(INVALID_ENUM_TYPE) }
+        fun fromCode(code: String): CourseCollege {
+            return tryFromCode(code).orElseThrow { RestApiException(INVALID_ENUM_TYPE) }
+        }
     }
 }

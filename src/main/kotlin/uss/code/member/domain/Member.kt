@@ -76,10 +76,12 @@ class Member private constructor(
         protected set
 
     val maxCredit: Int
-        get() = when {
-            lastSemesterGpa >= 4.0 -> 24
-            lastSemesterGpa >= 3.5 -> 21
-            else -> 19
+        get() {
+            return when {
+                lastSemesterGpa >= 4.0 -> 24
+                lastSemesterGpa >= 3.5 -> 21
+                else -> 19
+            }
         }
 
     fun updateDepartment(department: MemberDepartment) {
@@ -99,16 +101,18 @@ class Member private constructor(
             grade: MemberGrade,
             academicStatus: AcademicStatus,
             lastSemesterGpa: Double,
-        ): Member = Member(
-            email = email,
-            password = encodedPassword,
-            studentId = studentId,
-            name = name,
-            college = department.memberCollege,
-            department = department,
-            grade = grade,
-            academicStatus = academicStatus,
-            lastSemesterGpa = lastSemesterGpa,
-        )
+        ): Member {
+            return Member(
+                email = email,
+                password = encodedPassword,
+                studentId = studentId,
+                name = name,
+                college = department.memberCollege,
+                department = department,
+                grade = grade,
+                academicStatus = academicStatus,
+                lastSemesterGpa = lastSemesterGpa,
+            )
+        }
     }
 }

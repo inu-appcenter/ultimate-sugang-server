@@ -6,7 +6,8 @@ data class DepartmentsResponse(
 ) {
     companion object {
         @JvmStatic
-        fun of(departmentResponses: List<DepartmentResponse>): DepartmentsResponse =
-            DepartmentsResponse(departmentResponses = departmentResponses)
+        fun of(departmentResponses: List<DepartmentResponse>): DepartmentsResponse {
+            return DepartmentsResponse(departmentResponses = departmentResponses)
+        }
     }
 }

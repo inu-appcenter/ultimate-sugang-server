@@ -10,9 +10,11 @@ data class CourseAreaResponse(
 ) {
     companion object {
         @JvmStatic
-        fun from(courseCategory: CourseCategoryDto): CourseAreaResponse = CourseAreaResponse(
-            code = courseCategory.areaCode,
-            name = courseCategory.areaName,
-        )
+        fun from(courseCategory: CourseCategoryDto): CourseAreaResponse {
+            return CourseAreaResponse(
+                code = courseCategory.areaCode,
+                name = courseCategory.areaName,
+            )
+        }
     }
 }

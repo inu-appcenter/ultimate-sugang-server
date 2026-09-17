@@ -7,5 +7,7 @@ data class CourseCapacityDto(
     val maxCapacity: Int,
     val cartCount: Int,
 ) {
-    fun isRegisterable(): Boolean = currentEnrollment < maxCapacity
+    fun isRegisterable(): Boolean {
+        return currentEnrollment < maxCapacity
+    }
 }

@@ -100,8 +100,9 @@ enum class MemberDepartment(
 
     companion object {
         @JvmStatic
-        fun from(value: String): MemberDepartment =
-            entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
+        fun from(value: String): MemberDepartment {
+            return entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
                 ?: throw RestApiException(INVALID_ENUM_TYPE)
+        }
     }
 }

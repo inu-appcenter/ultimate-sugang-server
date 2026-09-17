@@ -8,8 +8,10 @@ data class RegistrationCoursesResponse(
         @JvmStatic
         fun of(
             registrationCourseResponses: List<RegistrationCourseResponse>,
-        ): RegistrationCoursesResponse = RegistrationCoursesResponse(
-            registrationCourseResponses = registrationCourseResponses,
-        )
+        ): RegistrationCoursesResponse {
+            return RegistrationCoursesResponse(
+                registrationCourseResponses = registrationCourseResponses,
+            )
+        }
     }
 }

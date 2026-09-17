@@ -10,9 +10,11 @@ data class InterdisciplinaryMajorResponse(
 ) {
     companion object {
         @JvmStatic
-        fun from(department: CourseDepartment): InterdisciplinaryMajorResponse = InterdisciplinaryMajorResponse(
-            code = department.name,
-            name = department.displayName,
-        )
+        fun from(department: CourseDepartment): InterdisciplinaryMajorResponse {
+            return InterdisciplinaryMajorResponse(
+                code = department.name,
+                name = department.displayName,
+            )
+        }
     }
 }

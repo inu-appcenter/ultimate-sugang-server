@@ -6,7 +6,8 @@ data class CachedCoursesDto(
 ) {
     companion object {
         @JvmStatic
-        fun of(courses: List<CachedCourseDto>): CachedCoursesDto =
-            CachedCoursesDto(courses = courses)
+        fun of(courses: List<CachedCourseDto>): CachedCoursesDto {
+            return CachedCoursesDto(courses = courses)
+        }
     }
 }

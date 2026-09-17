@@ -15,8 +15,9 @@ enum class MemberGrade(
 
     companion object {
         @JvmStatic
-        fun from(value: String): MemberGrade =
-            entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
+        fun from(value: String): MemberGrade {
+            return entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
                 ?: throw RestApiException(INVALID_ENUM_TYPE)
+        }
     }
 }

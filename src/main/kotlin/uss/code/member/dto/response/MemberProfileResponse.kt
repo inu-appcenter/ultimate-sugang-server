@@ -22,15 +22,17 @@ data class MemberProfileResponse(
 ) {
     companion object {
         @JvmStatic
-        fun of(member: Member): MemberProfileResponse = MemberProfileResponse(
-            email = member.email,
-            department = member.department.displayName,
-            studentId = member.studentId,
-            name = member.name,
-            grade = member.grade.displayName,
-            academicStatus = member.academicStatus.displayName,
-            gpa = member.lastSemesterGpa,
-            creditLimit = member.maxCredit,
-        )
+        fun of(member: Member): MemberProfileResponse {
+            return MemberProfileResponse(
+                email = member.email,
+                department = member.department.displayName,
+                studentId = member.studentId,
+                name = member.name,
+                grade = member.grade.displayName,
+                academicStatus = member.academicStatus.displayName,
+                gpa = member.lastSemesterGpa,
+                creditLimit = member.maxCredit,
+            )
+        }
     }
 }

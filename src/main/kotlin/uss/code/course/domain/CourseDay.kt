@@ -19,11 +19,13 @@ enum class CourseDay(
 
     companion object {
         @JvmStatic
-        fun tryFromCode(code: String?): Optional<CourseDay> =
-            Optional.ofNullable(entries.firstOrNull { it.code.isNotBlank() && it.code == code })
+        fun tryFromCode(code: String?): Optional<CourseDay> {
+            return Optional.ofNullable(entries.firstOrNull { it.code.isNotBlank() && it.code == code })
+        }
 
         @JvmStatic
-        fun fromCode(code: String): CourseDay =
-            tryFromCode(code).orElseThrow { RestApiException(INVALID_ENUM_TYPE) }
+        fun fromCode(code: String): CourseDay {
+            return tryFromCode(code).orElseThrow { RestApiException(INVALID_ENUM_TYPE) }
+        }
     }
 }

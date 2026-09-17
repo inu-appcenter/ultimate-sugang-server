@@ -12,7 +12,8 @@ data class EmailAvailabilityResponse(
 ) {
     companion object {
         @JvmStatic
-        fun of(available: Boolean): EmailAvailabilityResponse =
-            EmailAvailabilityResponse(available = available)
+        fun of(available: Boolean): EmailAvailabilityResponse {
+            return EmailAvailabilityResponse(available = available)
+        }
     }
 }

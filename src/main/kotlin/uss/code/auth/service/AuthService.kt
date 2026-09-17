@@ -76,12 +76,14 @@ class AuthService(
     }
 
     @Transactional(readOnly = true)
-    fun checkEmailAvailability(email: String): EmailAvailabilityResponse =
-        EmailAvailabilityResponse.of(!memberRepository.existsByEmail(email))
+    fun checkEmailAvailability(email: String): EmailAvailabilityResponse {
+        return EmailAvailabilityResponse.of(!memberRepository.existsByEmail(email))
+    }
 
     @Transactional(readOnly = true)
-    fun checkStudentIdAvailability(studentId: String): StudentIdAvailabilityResponse =
-        StudentIdAvailabilityResponse.of(!memberRepository.existsByStudentId(studentId))
+    fun checkStudentIdAvailability(studentId: String): StudentIdAvailabilityResponse {
+        return StudentIdAvailabilityResponse.of(!memberRepository.existsByStudentId(studentId))
+    }
 
     private fun validateCollegeMatchesDepartment(
         college: MemberCollege,

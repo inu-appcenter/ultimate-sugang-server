@@ -21,9 +21,11 @@ data class AdminTokenResponse(
         fun of(
             accessToken: String,
             name: String,
-        ): AdminTokenResponse = AdminTokenResponse(
-            accessToken = accessToken,
-            name = name,
-        )
+        ): AdminTokenResponse {
+            return AdminTokenResponse(
+                accessToken = accessToken,
+                name = name,
+            )
+        }
     }
 }

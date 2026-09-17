@@ -59,8 +59,9 @@ data class CoursesResponse(
     val courseResponses: List<CourseResponse>,
 ) {
     companion object {
-        fun of(courseResponses: List<CourseResponse>): CoursesResponse =
-            CoursesResponse(courseResponses = courseResponses)
+        fun of(courseResponses: List<CourseResponse>): CoursesResponse {
+            return CoursesResponse(courseResponses = courseResponses)
+        }
     }
 }
 ```

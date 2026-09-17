@@ -33,11 +33,13 @@ data class PageResponse<T>(
         fun <T> of(
             page: Page<*>,
             content: List<T>,
-        ): PageResponse<T> = PageResponse(
-            page = page.number + PAGE_NUMBER_OFFSET,
-            totalPages = page.totalPages,
-            hasNextPage = page.hasNext(),
-            content = content,
-        )
+        ): PageResponse<T> {
+            return PageResponse(
+                page = page.number + PAGE_NUMBER_OFFSET,
+                totalPages = page.totalPages,
+                hasNextPage = page.hasNext(),
+                content = content,
+            )
+        }
     }
 }

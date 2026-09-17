@@ -20,16 +20,20 @@ data class SemesterRefDto(
     fun matches(
         academicYear: Int,
         term: CourseTerm,
-    ): Boolean = this.academicYear == academicYear && this.term == term
+    ): Boolean {
+        return this.academicYear == academicYear && this.term == term
+    }
 
     companion object {
         @JvmStatic
         fun of(
             academicYear: Int,
             term: CourseTerm,
-        ): SemesterRefDto = SemesterRefDto(
-            academicYear = academicYear,
-            term = term,
-        )
+        ): SemesterRefDto {
+            return SemesterRefDto(
+                academicYear = academicYear,
+                term = term,
+            )
+        }
     }
 }

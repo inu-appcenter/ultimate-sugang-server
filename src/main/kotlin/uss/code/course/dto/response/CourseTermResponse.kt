@@ -12,10 +12,12 @@ data class CourseTermResponse(
 ) {
     companion object {
         @JvmStatic
-        fun from(courseTermInfo: CourseTermInfoDto): CourseTermResponse = CourseTermResponse(
-            academicYear = courseTermInfo.academicYear,
-            termCode = courseTermInfo.term.code,
-            termName = courseTermInfo.term.displayName,
-        )
+        fun from(courseTermInfo: CourseTermInfoDto): CourseTermResponse {
+            return CourseTermResponse(
+                academicYear = courseTermInfo.academicYear,
+                termCode = courseTermInfo.term.code,
+                termName = courseTermInfo.term.displayName,
+            )
+        }
     }
 }

@@ -175,16 +175,22 @@ class Course private constructor(
         this.status = ACTIVE
     }
 
-    fun isActive(): Boolean = status == ACTIVE
+    fun isActive(): Boolean {
+        return status == ACTIVE
+    }
 
     fun addCourseSchedule(courseSchedule: CourseSchedule) {
         this.schedules.add(courseSchedule)
         courseSchedule.addCourse(this)
     }
 
-    fun is75MinLesson(): Boolean = schedules.any(CourseSchedule::is75MinLesson)
+    fun is75MinLesson(): Boolean {
+        return schedules.any(CourseSchedule::is75MinLesson)
+    }
 
-    fun isRegisterable(): Boolean = currentEnrollment < maxCapacity
+    fun isRegisterable(): Boolean {
+        return currentEnrollment < maxCapacity
+    }
 
     private fun replaceClassification(
         changes: MutableList<CourseFieldChange>,
@@ -273,7 +279,9 @@ class Course private constructor(
         currentName: String,
         updatedCode: String,
         updatedName: String,
-    ): Boolean = currentCode == updatedCode && currentName == updatedName
+    ): Boolean {
+        return currentCode == updatedCode && currentName == updatedName
+    }
 
     private fun <T> replaceIfChanged(
         changes: MutableList<CourseFieldChange>,
@@ -313,9 +321,11 @@ class Course private constructor(
         fun create(
             snapshot: CourseSnapshot,
             maxCapacity: Int,
-        ): Course = Course(
-            snapshot = snapshot,
-            maxCapacity = maxCapacity,
-        )
+        ): Course {
+            return Course(
+                snapshot = snapshot,
+                maxCapacity = maxCapacity,
+            )
+        }
     }
 }

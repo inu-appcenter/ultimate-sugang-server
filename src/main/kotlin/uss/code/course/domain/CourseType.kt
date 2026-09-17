@@ -38,12 +38,14 @@ enum class CourseType(
         )
 
         @JvmStatic
-        fun isTagType(typeCode: String): Boolean =
-            TAG_TYPES.any { it.code == typeCode }
+        fun isTagType(typeCode: String): Boolean {
+            return TAG_TYPES.any { it.code == typeCode }
+        }
 
         @JvmStatic
-        fun fromCode(code: String): CourseType =
-            entries.firstOrNull { it.code.isNotBlank() && it.code == code }
+        fun fromCode(code: String): CourseType {
+            return entries.firstOrNull { it.code.isNotBlank() && it.code == code }
                 ?: throw RestApiException(INVALID_ENUM_TYPE)
+        }
     }
 }

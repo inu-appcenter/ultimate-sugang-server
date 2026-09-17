@@ -42,9 +42,11 @@ class SystemSemester private constructor(
         fun create(
             academicYear: Int,
             term: CourseTerm,
-        ): SystemSemester = SystemSemester(
-            academicYear = academicYear,
-            term = term,
-        )
+        ): SystemSemester {
+            return SystemSemester(
+                academicYear = academicYear,
+                term = term,
+            )
+        }
     }
 }

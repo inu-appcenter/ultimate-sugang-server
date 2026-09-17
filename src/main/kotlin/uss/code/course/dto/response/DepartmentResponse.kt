@@ -10,9 +10,11 @@ data class DepartmentResponse(
 ) {
     companion object {
         @JvmStatic
-        fun from(department: CourseDepartment): DepartmentResponse = DepartmentResponse(
-            code = department.name,
-            name = department.displayName,
-        )
+        fun from(department: CourseDepartment): DepartmentResponse {
+            return DepartmentResponse(
+                code = department.name,
+                name = department.displayName,
+            )
+        }
     }
 }

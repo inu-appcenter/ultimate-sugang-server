@@ -39,8 +39,8 @@ enum class CourseArea(
     GENERAL_ELECTIVE("81", "일반선택"),
     MILITARY("71", "군사학");
 
-    fun isGeneralEducationArea(): Boolean =
-        when (this) {
+    fun isGeneralEducationArea(): Boolean {
+        return when (this) {
             BASIC_SCIENCE_ENGINEERING,
             ACADEMIC_FOUNDATION,
             CORE_INU_SEMINAR,
@@ -57,22 +57,26 @@ enum class CourseArea(
 
             else -> false
         }
+    }
 
     companion object {
         @JvmStatic
-        fun tryFromCode(code: String?): Optional<CourseArea> =
-            Optional.ofNullable(entries.firstOrNull { it.code.isNotBlank() && it.code == code })
+        fun tryFromCode(code: String?): Optional<CourseArea> {
+            return Optional.ofNullable(entries.firstOrNull { it.code.isNotBlank() && it.code == code })
+        }
 
         @JvmStatic
-        fun fromCode(code: String): CourseArea =
-            tryFromCode(code).orElseThrow { RestApiException(INVALID_ENUM_TYPE) }
+        fun fromCode(code: String): CourseArea {
+            return tryFromCode(code).orElseThrow { RestApiException(INVALID_ENUM_TYPE) }
+        }
 
-        fun from(courseArea: String): CourseArea =
-            try {
+        fun from(courseArea: String): CourseArea {
+            return try {
                 valueOf(courseArea.uppercase())
             } catch (e: IllegalArgumentException) {
                 throw RestApiException(INVALID_ENUM_TYPE)
             }
+        }
 
         @JvmStatic
         fun fromGeneralEducation(courseArea: String): CourseArea {

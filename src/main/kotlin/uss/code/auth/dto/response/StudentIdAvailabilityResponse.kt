@@ -12,7 +12,8 @@ data class StudentIdAvailabilityResponse(
 ) {
     companion object {
         @JvmStatic
-        fun of(available: Boolean): StudentIdAvailabilityResponse =
-            StudentIdAvailabilityResponse(available = available)
+        fun of(available: Boolean): StudentIdAvailabilityResponse {
+            return StudentIdAvailabilityResponse(available = available)
+        }
     }
 }

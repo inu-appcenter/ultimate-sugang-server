@@ -19,9 +19,13 @@ enum class CourseClassification(
     GENERAL_ELECTIVE("80", "일반선택"),
     MILITARY("70", "군사학");
 
-    fun isLiberalArtsScreen(): Boolean = this in LIBERAL_ARTS_SCREEN
+    fun isLiberalArtsScreen(): Boolean {
+        return this in LIBERAL_ARTS_SCREEN
+    }
 
-    fun hasArea(area: CourseArea): Boolean = area in AREAS[this].orEmpty()
+    fun hasArea(area: CourseArea): Boolean {
+        return area in AREAS[this].orEmpty()
+    }
 
     companion object {
         private val LIBERAL_ARTS_SCREEN = setOf(
@@ -52,9 +56,10 @@ enum class CourseClassification(
         )
 
         @JvmStatic
-        fun fromCode(code: String): CourseClassification =
-            entries.firstOrNull { it.code.isNotBlank() && it.code == code }
+        fun fromCode(code: String): CourseClassification {
+            return entries.firstOrNull { it.code.isNotBlank() && it.code == code }
                 ?: throw RestApiException(INVALID_ENUM_TYPE)
+        }
 
         @JvmStatic
         fun fromLiberalArtsScreen(code: String): CourseClassification {

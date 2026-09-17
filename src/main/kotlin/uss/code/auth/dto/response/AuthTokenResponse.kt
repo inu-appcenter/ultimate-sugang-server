@@ -12,7 +12,8 @@ data class AuthTokenResponse(
 ) {
     companion object {
         @JvmStatic
-        fun of(accessToken: String): AuthTokenResponse =
-            AuthTokenResponse(accessToken = accessToken)
+        fun of(accessToken: String): AuthTokenResponse {
+            return AuthTokenResponse(accessToken = accessToken)
+        }
     }
 }

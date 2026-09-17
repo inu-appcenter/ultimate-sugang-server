@@ -52,7 +52,9 @@ class CourseSchedule private constructor(
         this.course = course
     }
 
-    fun is75MinLesson(): Boolean = periodCode.startsWith(LONG_LESSON_CODE_PREFIX)
+    fun is75MinLesson(): Boolean {
+        return periodCode.startsWith(LONG_LESSON_CODE_PREFIX)
+    }
 
     companion object {
         private const val LONG_LESSON_CODE_PREFIX = "B"
@@ -65,13 +67,15 @@ class CourseSchedule private constructor(
             classroom: String,
             startTime: LocalTime,
             endTime: LocalTime,
-        ): CourseSchedule = CourseSchedule(
-            dayOfWeek = dayOfWeek,
-            periodCode = periodCode,
-            periodName = periodName,
-            classroom = classroom,
-            startTime = startTime,
-            endTime = endTime,
-        )
+        ): CourseSchedule {
+            return CourseSchedule(
+                dayOfWeek = dayOfWeek,
+                periodCode = periodCode,
+                periodName = periodName,
+                classroom = classroom,
+                startTime = startTime,
+                endTime = endTime,
+            )
+        }
     }
 }

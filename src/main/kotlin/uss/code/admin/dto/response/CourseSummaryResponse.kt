@@ -38,12 +38,14 @@ data class CourseSummaryResponse(
             scheduleCount: Long,
             lastJob: LastJobInfo?,
             runningJobId: Long?,
-        ): CourseSummaryResponse = CourseSummaryResponse(
-            semester = semester,
-            courseCount = courseCount,
-            scheduleCount = scheduleCount,
-            lastJob = lastJob,
-            runningJobId = runningJobId,
-        )
+        ): CourseSummaryResponse {
+            return CourseSummaryResponse(
+                semester = semester,
+                courseCount = courseCount,
+                scheduleCount = scheduleCount,
+                lastJob = lastJob,
+                runningJobId = runningJobId,
+            )
+        }
     }
 }

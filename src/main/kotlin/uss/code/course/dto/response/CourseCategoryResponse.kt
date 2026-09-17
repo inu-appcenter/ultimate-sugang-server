@@ -14,10 +14,12 @@ data class CourseCategoryResponse(
             code: String,
             name: String,
             areaResponses: List<CourseAreaResponse>,
-        ): CourseCategoryResponse = CourseCategoryResponse(
-            code = code,
-            name = name,
-            areaResponses = areaResponses,
-        )
+        ): CourseCategoryResponse {
+            return CourseCategoryResponse(
+                code = code,
+                name = name,
+                areaResponses = areaResponses,
+            )
+        }
     }
 }

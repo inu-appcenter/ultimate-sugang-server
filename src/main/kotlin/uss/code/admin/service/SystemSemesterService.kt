@@ -14,7 +14,9 @@ class SystemSemesterService(
     private val systemSemesterRepository: SystemSemesterRepository,
 ) {
     @Transactional(readOnly = true)
-    fun getSystemSemester(): SystemSemesterResponse = SystemSemesterResponse.from(findSystemSemester())
+    fun getSystemSemester(): SystemSemesterResponse {
+        return SystemSemesterResponse.from(findSystemSemester())
+    }
 
     @Transactional
     fun changeSystemSemester(request: SystemSemesterRequest): SystemSemesterResponse {
@@ -25,7 +27,8 @@ class SystemSemesterService(
         return SystemSemesterResponse.from(systemSemester)
     }
 
-    private fun findSystemSemester(): SystemSemester =
-        systemSemesterRepository.findAllOrdered().firstOrNull()
+    private fun findSystemSemester(): SystemSemester {
+        return systemSemesterRepository.findAllOrdered().firstOrNull()
             ?: throw RestApiException(SYSTEM_SEMESTER_NOT_FOUND)
+    }
 }

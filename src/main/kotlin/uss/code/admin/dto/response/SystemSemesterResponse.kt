@@ -20,9 +20,11 @@ data class SystemSemesterResponse(
 ) {
     companion object {
         @JvmStatic
-        fun from(systemSemester: SystemSemester): SystemSemesterResponse = SystemSemesterResponse(
-            academicYear = systemSemester.academicYear,
-            term = systemSemester.term,
-        )
+        fun from(systemSemester: SystemSemester): SystemSemesterResponse {
+            return SystemSemesterResponse(
+                academicYear = systemSemester.academicYear,
+                term = systemSemester.term,
+            )
+        }
     }
 }

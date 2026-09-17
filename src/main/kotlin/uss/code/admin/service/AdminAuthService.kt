@@ -15,10 +15,10 @@ import uss.code.global.exception.domain.RestApiException
 
 @Service
 class AdminAuthService(
+    private val adminRepository: AdminRepository,
+
     private val jwtProvider: JwtProvider,
     private val passwordEncoder: AdminPasswordEncoder,
-
-    private val adminRepository: AdminRepository,
 ) {
     @Transactional(readOnly = true)
     fun login(request: AdminLoginRequest): AdminTokenResponse {

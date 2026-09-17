@@ -24,8 +24,9 @@ enum class MemberCollege(
 
     companion object {
         @JvmStatic
-        fun from(value: String): MemberCollege =
-            entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
+        fun from(value: String): MemberCollege {
+            return entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
                 ?: throw RestApiException(INVALID_ENUM_TYPE)
+        }
     }
 }

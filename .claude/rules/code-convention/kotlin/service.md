@@ -18,7 +18,6 @@ Java 컨벤션(`../java/service.md`)의 단일 도메인 책임, 다른 도메�
 @Service
 class CartService(
     private val cartRepository: CartRepository,
-
     private val courseRepository: CourseRepository,
     private val memberRepository: MemberRepository,
 ) {

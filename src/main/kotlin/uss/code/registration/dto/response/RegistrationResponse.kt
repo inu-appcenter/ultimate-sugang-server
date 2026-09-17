@@ -9,8 +9,10 @@ data class RegistrationResponse(
 ) {
     companion object {
         @JvmStatic
-        fun from(course: Course): RegistrationResponse = RegistrationResponse(
-            courseResponse = CourseResponse.from(course),
-        )
+        fun from(course: Course): RegistrationResponse {
+            return RegistrationResponse(
+                courseResponse = CourseResponse.from(course),
+            )
+        }
     }
 }

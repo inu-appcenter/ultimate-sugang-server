@@ -17,8 +17,9 @@ enum class CourseGrade(
 
     companion object {
         @JvmStatic
-        fun fromCode(code: String): CourseGrade =
-            entries.firstOrNull { it.code.isNotBlank() && it.code == code }
+        fun fromCode(code: String): CourseGrade {
+            return entries.firstOrNull { it.code.isNotBlank() && it.code == code }
                 ?: throw RestApiException(INVALID_ENUM_TYPE)
+        }
     }
 }

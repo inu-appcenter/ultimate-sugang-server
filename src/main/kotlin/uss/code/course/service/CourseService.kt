@@ -30,10 +30,10 @@ import uss.code.member.repository.MemberRepository
 
 @Service
 class CourseService(
-    private val courseCacheLoader: CourseCacheLoader,
-
     private val courseRepository: CourseRepository,
     private val memberRepository: MemberRepository,
+
+    private val courseCacheLoader: CourseCacheLoader,
 ) {
     @Transactional(readOnly = true)
     fun getMajorCourses(memberId: Long): CoursesResponse {
@@ -163,11 +163,13 @@ class CourseService(
     private fun toCourseResponses(
         courses: List<CachedCourseDto>,
         capacities: Map<Long, CourseCapacityDto>,
-    ): List<CourseResponse> =
-        courses.mapNotNull { course ->
+    ): List<CourseResponse> {
+        return courses.mapNotNull { course ->
             capacities[course.id]?.let { capacity -> CourseResponse.of(course, capacity) }
         }
+    }
 
-    private fun toCourseResponses(courses: List<Course>): List<CourseResponse> =
-        courses.map { CourseResponse.from(it) }
+    private fun toCourseResponses(courses: List<Course>): List<CourseResponse> {
+        return courses.map { CourseResponse.from(it) }
+    }
 }

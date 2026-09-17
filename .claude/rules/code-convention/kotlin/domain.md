@@ -57,10 +57,12 @@ class Cart private constructor(
         fun create(
             member: Member,
             course: Course,
-        ): Cart = Cart(
-            member = member,
-            course = course,
-        )
+        ): Cart {
+            return Cart(
+                member = member,
+                course = course,
+            )
+        }
     }
 }
 ```
@@ -81,11 +83,13 @@ enum class CourseTerm(
     SECOND("20", "2학기");
 
     companion object {
-        fun tryFromCode(code: String): CourseTerm? =
-            entries.firstOrNull { it.code == code }
+        fun tryFromCode(code: String): CourseTerm? {
+            return entries.firstOrNull { it.code == code }
+        }
 
-        fun fromCode(code: String): CourseTerm =
-            tryFromCode(code) ?: throw RestApiException(INVALID_ENUM_TYPE)
+        fun fromCode(code: String): CourseTerm {
+            return tryFromCode(code) ?: throw RestApiException(INVALID_ENUM_TYPE)
+        }
     }
 }
 ```

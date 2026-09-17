@@ -13,8 +13,9 @@ enum class AcademicStatus(
 
     companion object {
         @JvmStatic
-        fun from(value: String): AcademicStatus =
-            entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
+        fun from(value: String): AcademicStatus {
+            return entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
                 ?: throw RestApiException(INVALID_ENUM_TYPE)
+        }
     }
 }

@@ -40,9 +40,11 @@ class Cart private constructor(
         fun create(
             member: Member,
             course: Course,
-        ): Cart = Cart(
-            member = member,
-            course = course,
-        )
+        ): Cart {
+            return Cart(
+                member = member,
+                course = course,
+            )
+        }
     }
 }

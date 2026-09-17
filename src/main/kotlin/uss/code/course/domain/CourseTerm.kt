@@ -14,11 +14,13 @@ enum class CourseTerm(
     WINTER("40", "겨울계절학기");
 
     companion object {
-        fun tryFromCode(code: String): CourseTerm? =
-            entries.firstOrNull { it.code.isNotBlank() && it.code == code }
+        fun tryFromCode(code: String): CourseTerm? {
+            return entries.firstOrNull { it.code.isNotBlank() && it.code == code }
+        }
 
         @JvmStatic
-        fun fromCode(code: String): CourseTerm =
-            tryFromCode(code) ?: throw RestApiException(INVALID_ENUM_TYPE)
+        fun fromCode(code: String): CourseTerm {
+            return tryFromCode(code) ?: throw RestApiException(INVALID_ENUM_TYPE)
+        }
     }
 }

@@ -51,22 +51,26 @@ data class CourseResponse(
         fun of(
             course: CachedCourseDto,
             capacity: CourseCapacityDto,
-        ): CourseResponse = of(
-            course = course,
-            capacity = capacity.maxCapacity,
-            enrolled = capacity.currentEnrollment,
-            cartCount = capacity.cartCount,
-            isClosed = !capacity.isRegisterable(),
-        )
+        ): CourseResponse {
+            return of(
+                course = course,
+                capacity = capacity.maxCapacity,
+                enrolled = capacity.currentEnrollment,
+                cartCount = capacity.cartCount,
+                isClosed = !capacity.isRegisterable(),
+            )
+        }
 
         @JvmStatic
-        fun from(course: Course): CourseResponse = of(
-            course = CachedCourseDto.from(course),
-            capacity = course.maxCapacity,
-            enrolled = course.currentEnrollment,
-            cartCount = course.cartCount,
-            isClosed = !(course.isActive() && course.isRegisterable()),
-        )
+        fun from(course: Course): CourseResponse {
+            return of(
+                course = CachedCourseDto.from(course),
+                capacity = course.maxCapacity,
+                enrolled = course.currentEnrollment,
+                cartCount = course.cartCount,
+                isClosed = !(course.isActive() && course.isRegisterable()),
+            )
+        }
 
         private fun of(
             course: CachedCourseDto,
@@ -74,27 +78,29 @@ data class CourseResponse(
             enrolled: Int,
             cartCount: Int,
             isClosed: Boolean,
-        ): CourseResponse = CourseResponse(
-            id = course.id.toString(),
-            code = course.code,
-            courseCode = course.courseCode,
-            name = course.name,
-            nameEn = course.nameEn,
-            englishCourseName = course.englishCourseName,
-            professor = course.professor,
-            credits = course.credits,
-            capacity = capacity,
-            enrolled = enrolled,
-            cartCount = cartCount,
-            courseType = course.courseType,
-            courseArea = course.courseArea,
-            department = course.department,
-            grade = course.grade,
-            schedule = course.schedule,
-            tags = course.tags,
-            isEnglish = course.isEnglish,
-            isNight = course.isNight,
-            isClosed = isClosed,
-        )
+        ): CourseResponse {
+            return CourseResponse(
+                id = course.id.toString(),
+                code = course.code,
+                courseCode = course.courseCode,
+                name = course.name,
+                nameEn = course.nameEn,
+                englishCourseName = course.englishCourseName,
+                professor = course.professor,
+                credits = course.credits,
+                capacity = capacity,
+                enrolled = enrolled,
+                cartCount = cartCount,
+                courseType = course.courseType,
+                courseArea = course.courseArea,
+                department = course.department,
+                grade = course.grade,
+                schedule = course.schedule,
+                tags = course.tags,
+                isEnglish = course.isEnglish,
+                isNight = course.isNight,
+                isClosed = isClosed,
+            )
+        }
     }
 }

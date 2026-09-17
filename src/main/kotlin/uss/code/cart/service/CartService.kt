@@ -25,7 +25,6 @@ import uss.code.member.repository.MemberRepository
 @Service
 class CartService(
     private val cartRepository: CartRepository,
-
     private val courseRepository: CourseRepository,
     private val memberRepository: MemberRepository,
 ) {

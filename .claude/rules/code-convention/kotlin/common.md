@@ -47,10 +47,12 @@ val member = memberRepository.findByIdOrNull(memberId)
 fun create(
     member: Member,
     course: Course,
-): Cart = Cart(
-    member = member,
-    course = course,
-)
+): Cart {
+    return Cart(
+        member = member,
+        course = course,
+    )
+}
 ```
 
 ## Lombok 대체
@@ -97,9 +99,24 @@ class CartService(
 
 - 들여쓰기는 4칸, 그 밖의 형식은 Kotlin 공식 스타일을 따른다
 - 파라미터가 2개 이상인 함수·생성자 선언은 파라미터마다 줄바꿈하고, 마지막 파라미터 뒤에 trailing comma를 붙여라 (Java 규칙 계승 + Kotlin 공식 권장)
-- 의존성 주입 파라미터가 여러 개면 도메인·성격별로 빈 줄로 그룹핑하라 (Java 규칙 계승)
+  - Controller와 Docs의 함수는 파라미터가 1개여도 줄바꿈한다 (`controller.md`)
+- 의존성 주입 파라미터는 계층별로 묶고, 그룹 사이를 빈 줄로 나눠라
+  - 같은 계층(Repository끼리, Service끼리)은 한 그룹이다. 도메인이 달라도 나누지 않는다. 그룹 안에서는 자기 도메인을 먼저 쓴다
+  - 계층에 속하지 않는 컴포넌트(`JwtProvider`, 인코더, 리졸버, 로더 등)는 따로 한 그룹으로 묶는다
+  - 가장 가까운 아래 계층 그룹을 맨 위에 둔다. Service는 Repository 그룹, Controller는 Service 그룹이 먼저다
+
+```kotlin
+@Service
+class AdminAuthService(
+    private val adminRepository: AdminRepository,
+
+    private val jwtProvider: JwtProvider,
+    private val passwordEncoder: AdminPasswordEncoder,
+)
+```
 - 함수 본문에서 논리 단계나 처리 대상 도메인이 바뀌면 빈 줄로 구분하라 (Java 규칙 계승)
-- 본문이 표현식 하나면 `=` 표현식 본문을 쓸 수 있다. 여러 단계를 거치면 블록 본문을 써라
+- 함수 본문은 한 줄이어도 블록(`{ }`)으로 쓰고 `return`으로 반환하라. `=` 표현식 본문을 쓰지 마라. 커스텀 getter도 같다 (`get() { return ... }`)
+  - Kotlin 공식 스타일은 한 줄 본문에 `=`를 권하지만, 이 프로젝트는 두 형태가 섞이지 않게 블록으로 통일한다
 - 클래스 멤버 순서는 프로퍼티 → `init` 블록 → 부 생성자 → 함수 → `companion object`다 (Kotlin 공식 순서)
 - 문자열 연결 대신 문자열 템플릿(`"$value"`, `"${course.code}"`)을 써라
 

@@ -40,9 +40,11 @@ class Registration private constructor(
         fun create(
             member: Member,
             course: Course,
-        ): Registration = Registration(
-            member = member,
-            course = course,
-        )
+        ): Registration {
+            return Registration(
+                member = member,
+                course = course,
+            )
+        }
     }
 }

@@ -3,7 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '2.2.21'
     id 'org.jetbrains.kotlin.plugin.spring' version '2.2.21'
     id 'org.jetbrains.kotlin.plugin.jpa' version '2.2.21'
-    id 'org.jetbrains.kotlin.plugin.lombok' version '2.2.21'
     id 'org.springframework.boot' version '4.0.1'
     id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -28,12 +27,6 @@ allOpen {
     annotation 'jakarta.persistence.Entity'
     annotation 'jakarta.persistence.MappedSuperclass'
     annotation 'jakarta.persistence.Embeddable'
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
 }
 
 repositories {
@@ -64,10 +57,6 @@ dependencies {
 
     // API Specification
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
-
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
 
     // Migration
     implementation 'org.springframework.boot:spring-boot-starter-flyway'

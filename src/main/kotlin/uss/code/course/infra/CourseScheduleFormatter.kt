@@ -10,7 +10,6 @@ object CourseScheduleFormatter {
     private const val CLASSROOM_PREFIX = " ("
     private const val CLASSROOM_SUFFIX = ")"
 
-    @JvmStatic
     fun format(schedules: List<CourseSchedule>): String {
         if (schedules.isEmpty()) {
             return NO_SCHEDULE

@@ -3,7 +3,6 @@ package uss.code.admin.dto.response
 import io.swagger.v3.oas.annotations.media.Schema
 import uss.code.admin.dto.internal.SemesterRefDto
 
-@JvmRecord
 data class CourseSummaryResponse(
     @field:Schema(description = "적재된 학기. 강의가 하나도 없으면 null")
     val semester: SemesterRefDto?,
@@ -21,7 +20,6 @@ data class CourseSummaryResponse(
     val scheduleCount: Long,
 ) {
     companion object {
-        @JvmStatic
         fun of(
             semester: SemesterRefDto?,
             courseCount: Long,

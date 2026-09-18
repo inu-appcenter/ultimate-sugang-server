@@ -3,7 +3,6 @@ package uss.code.auth.dto.request
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.*
 
-@JvmRecord
 data class SignUpRequest(
     @field:Schema(
         description = "이메일",

@@ -3,11 +3,9 @@ package uss.code.course.domain
 import uss.code.global.exception.domain.ExceptionCode.INVALID_ENUM_TYPE
 import uss.code.global.exception.domain.ExceptionCode.INVALID_GENERAL_EDUCATION_AREA
 import uss.code.global.exception.domain.RestApiException
-import java.util.*
 
 enum class CourseArea(
     val code: String,
-    @get:JvmName("getName")
     val displayName: String,
 ) {
     // 전공 영역
@@ -60,14 +58,12 @@ enum class CourseArea(
     }
 
     companion object {
-        @JvmStatic
-        fun tryFromCode(code: String?): Optional<CourseArea> {
-            return Optional.ofNullable(entries.firstOrNull { it.code.isNotBlank() && it.code == code })
+        fun tryFromCode(code: String): CourseArea? {
+            return entries.firstOrNull { it.code.isNotBlank() && it.code == code }
         }
 
-        @JvmStatic
         fun fromCode(code: String): CourseArea {
-            return tryFromCode(code).orElseThrow { RestApiException(INVALID_ENUM_TYPE) }
+            return tryFromCode(code) ?: throw RestApiException(INVALID_ENUM_TYPE)
         }
 
         fun from(courseArea: String): CourseArea {
@@ -78,7 +74,6 @@ enum class CourseArea(
             }
         }
 
-        @JvmStatic
         fun fromGeneralEducation(courseArea: String): CourseArea {
             val area = from(courseArea)
 

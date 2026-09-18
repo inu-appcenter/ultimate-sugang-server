@@ -36,7 +36,6 @@ class Cart private constructor(
         protected set
 
     companion object {
-        @JvmStatic
         fun create(
             member: Member,
             course: Course,

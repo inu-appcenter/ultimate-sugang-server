@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotNull
 import uss.code.course.domain.CourseTerm
 
-@JvmRecord
 data class SystemSemesterRequest(
     @field:Schema(
         description = "표시 학년도. 4자리 정수",

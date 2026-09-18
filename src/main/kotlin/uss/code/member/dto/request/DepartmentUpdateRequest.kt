@@ -3,7 +3,6 @@ package uss.code.member.dto.request
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 
-@JvmRecord
 data class DepartmentUpdateRequest(
     @field:Schema(
         description = "변경할 학과",

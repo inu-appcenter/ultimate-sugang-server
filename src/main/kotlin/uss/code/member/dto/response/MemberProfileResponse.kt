@@ -2,7 +2,6 @@ package uss.code.member.dto.response
 
 import uss.code.member.domain.Member
 
-@JvmRecord
 data class MemberProfileResponse(
     val email: String,
 
@@ -21,7 +20,6 @@ data class MemberProfileResponse(
     val creditLimit: Int,
 ) {
     companion object {
-        @JvmStatic
         fun of(member: Member): MemberProfileResponse {
             return MemberProfileResponse(
                 email = member.email,

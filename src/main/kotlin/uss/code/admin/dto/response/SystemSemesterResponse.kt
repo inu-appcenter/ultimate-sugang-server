@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 import uss.code.admin.domain.SystemSemester
 import uss.code.course.domain.CourseTerm
 
-@JvmRecord
 data class SystemSemesterResponse(
     @field:Schema(
         description = "표시 학년도",
@@ -19,7 +18,6 @@ data class SystemSemesterResponse(
     val term: CourseTerm,
 ) {
     companion object {
-        @JvmStatic
         fun from(systemSemester: SystemSemester): SystemSemesterResponse {
             return SystemSemesterResponse(
                 academicYear = systemSemester.academicYear,

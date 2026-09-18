@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 
-@JvmRecord
 data class AdminLoginRequest(
     @field:Schema(
         description = "관리자 로그인 아이디",

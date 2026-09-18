@@ -4,7 +4,6 @@ import uss.code.global.exception.domain.ExceptionCode.INVALID_ENUM_TYPE
 import uss.code.global.exception.domain.RestApiException
 
 enum class AcademicStatus(
-    @get:JvmName("getName")
     val displayName: String,
 ) {
     ENROLLED("재학"),
@@ -12,7 +11,6 @@ enum class AcademicStatus(
     DEFERMENT("유예");
 
     companion object {
-        @JvmStatic
         fun from(value: String): AcademicStatus {
             return entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
                 ?: throw RestApiException(INVALID_ENUM_TYPE)

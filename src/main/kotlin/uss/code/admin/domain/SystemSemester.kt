@@ -38,7 +38,6 @@ class SystemSemester private constructor(
     }
 
     companion object {
-        @JvmStatic
         fun create(
             academicYear: Int,
             term: CourseTerm,

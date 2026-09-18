@@ -4,7 +4,6 @@ import uss.code.course.dto.response.CourseResponse
 import uss.code.registration.domain.Registration
 import java.time.format.DateTimeFormatter
 
-@JvmRecord
 data class RegistrationCourseResponse(
     val studentId: String,
 
@@ -20,7 +19,6 @@ data class RegistrationCourseResponse(
         private const val NO_RE_ATTENDANCE = ""
         private val CREATED_AT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
 
-        @JvmStatic
         fun of(
             registration: Registration,
             studentId: String,

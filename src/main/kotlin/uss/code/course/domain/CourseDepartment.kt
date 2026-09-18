@@ -3,12 +3,10 @@ package uss.code.course.domain
 import uss.code.global.exception.domain.ExceptionCode.*
 import uss.code.global.exception.domain.RestApiException
 import uss.code.member.domain.MemberDepartment
-import java.util.*
 
 enum class CourseDepartment(
     val code: String,
     val courseCollege: CourseCollege,
-    @get:JvmName("getName")
     val displayName: String,
     val owner: MemberDepartment? = null,
     val kind: CourseDepartmentKind = CourseDepartmentKind.DEPARTMENT,
@@ -185,17 +183,14 @@ enum class CourseDepartment(
     companion object {
         private const val NIGHT_NAME_SUFFIX = "(야)"
 
-        @JvmStatic
-        fun tryFromCode(code: String?): Optional<CourseDepartment> {
-            return Optional.ofNullable(entries.firstOrNull { it.code.isNotBlank() && it.code == code })
+        fun tryFromCode(code: String): CourseDepartment? {
+            return entries.firstOrNull { it.code.isNotBlank() && it.code == code }
         }
 
-        @JvmStatic
         fun fromCode(code: String): CourseDepartment {
-            return tryFromCode(code).orElseThrow { RestApiException(INVALID_ENUM_TYPE) }
+            return tryFromCode(code) ?: throw RestApiException(INVALID_ENUM_TYPE)
         }
 
-        @JvmStatic
         fun from(courseDepartment: String): CourseDepartment {
             return try {
                 valueOf(courseDepartment.uppercase())
@@ -204,22 +199,18 @@ enum class CourseDepartment(
             }
         }
 
-        @JvmStatic
         fun ownedBy(memberDepartment: MemberDepartment): List<CourseDepartment> {
             return entries.filter { it.owner == memberDepartment }
         }
 
-        @JvmStatic
         fun departmentValues(): List<CourseDepartment> {
             return valuesOf(CourseDepartmentKind.DEPARTMENT)
         }
 
-        @JvmStatic
         fun interdisciplinaryValues(): List<CourseDepartment> {
             return valuesOf(CourseDepartmentKind.INTERDISCIPLINARY)
         }
 
-        @JvmStatic
         fun fromDepartment(department: String): CourseDepartment {
             val courseDepartment = from(department)
 
@@ -230,7 +221,6 @@ enum class CourseDepartment(
             return courseDepartment
         }
 
-        @JvmStatic
         fun fromInterdisciplinary(department: String): CourseDepartment {
             val courseDepartment = from(department)
 

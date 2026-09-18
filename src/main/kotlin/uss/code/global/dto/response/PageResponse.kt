@@ -3,7 +3,6 @@ package uss.code.global.dto.response
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.data.domain.Page
 
-@JvmRecord
 data class PageResponse<T>(
     @field:Schema(
         description = "현재 페이지 번호. 1부터 시작한다",
@@ -29,7 +28,6 @@ data class PageResponse<T>(
     companion object {
         private const val PAGE_NUMBER_OFFSET = 1
 
-        @JvmStatic
         fun <T> of(
             page: Page<*>,
             content: List<T>,

@@ -2,11 +2,9 @@ package uss.code.course.domain
 
 import uss.code.global.exception.domain.ExceptionCode.INVALID_ENUM_TYPE
 import uss.code.global.exception.domain.RestApiException
-import java.util.*
 
 enum class CourseDay(
     val code: String,
-    @get:JvmName("getName")
     val displayName: String,
 ) {
     MONDAY("1", "월"),
@@ -18,14 +16,12 @@ enum class CourseDay(
     SUNDAY("", "일");
 
     companion object {
-        @JvmStatic
-        fun tryFromCode(code: String?): Optional<CourseDay> {
-            return Optional.ofNullable(entries.firstOrNull { it.code.isNotBlank() && it.code == code })
+        fun tryFromCode(code: String): CourseDay? {
+            return entries.firstOrNull { it.code.isNotBlank() && it.code == code }
         }
 
-        @JvmStatic
         fun fromCode(code: String): CourseDay {
-            return tryFromCode(code).orElseThrow { RestApiException(INVALID_ENUM_TYPE) }
+            return tryFromCode(code) ?: throw RestApiException(INVALID_ENUM_TYPE)
         }
     }
 }

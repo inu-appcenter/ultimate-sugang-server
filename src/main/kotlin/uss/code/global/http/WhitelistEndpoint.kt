@@ -45,7 +45,6 @@ object WhitelistEndpoint {
         ),
     )
 
-    @JvmStatic
     fun isWhitelisted(
         path: String,
         method: String,

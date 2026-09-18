@@ -47,7 +47,6 @@ data class CourseResponse(
     val isClosed: Boolean,
 ) {
     companion object {
-        @JvmStatic
         fun of(
             course: CachedCourseDto,
             capacity: CourseCapacityDto,
@@ -61,7 +60,6 @@ data class CourseResponse(
             )
         }
 
-        @JvmStatic
         fun from(course: Course): CourseResponse {
             return of(
                 course = CachedCourseDto.from(course),

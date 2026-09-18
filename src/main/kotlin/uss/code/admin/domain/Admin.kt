@@ -47,7 +47,6 @@ class Admin private constructor(
     }
 
     companion object {
-        @JvmStatic
         fun create(
             loginId: String,
             encodedPassword: String,

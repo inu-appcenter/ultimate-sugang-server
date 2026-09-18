@@ -3,7 +3,6 @@ package uss.code.admin.dto.internal
 import io.swagger.v3.oas.annotations.media.Schema
 import uss.code.course.domain.CourseTerm
 
-@JvmRecord
 data class SemesterRefDto(
     @field:Schema(
         description = "학년도",
@@ -25,7 +24,6 @@ data class SemesterRefDto(
     }
 
     companion object {
-        @JvmStatic
         fun of(
             academicYear: Int,
             term: CourseTerm,

@@ -1,6 +1,5 @@
 package uss.code.course.dto.response
 
-@JvmRecord
 data class CourseCategoryResponse(
     val code: String,
 
@@ -9,7 +8,6 @@ data class CourseCategoryResponse(
     val areaResponses: List<CourseAreaResponse>,
 ) {
     companion object {
-        @JvmStatic
         fun of(
             code: String,
             name: String,

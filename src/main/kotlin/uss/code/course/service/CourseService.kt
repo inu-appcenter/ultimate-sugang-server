@@ -145,9 +145,13 @@ class CourseService(
             return null
         }
 
-        return CourseArea.tryFromCode(areaCode)
-            .filter { classification.hasArea(it) }
-            .orElseThrow { RestApiException(INVALID_GENERAL_EDUCATION_AREA) }
+        val area = CourseArea.tryFromCode(areaCode)
+
+        if (area == null || !classification.hasArea(area)) {
+            throw RestApiException(INVALID_GENERAL_EDUCATION_AREA)
+        }
+
+        return area
     }
 
     private fun toCourseResponses(

@@ -6,7 +6,6 @@ import uss.code.global.exception.domain.RestApiException
 
 enum class CourseClassification(
     val code: String,
-    @get:JvmName("getName")
     val displayName: String,
 ) {
     MAJOR_ADVANCED("41", "전공심화"),
@@ -55,13 +54,11 @@ enum class CourseClassification(
             MILITARY to setOf(CourseArea.MILITARY),
         )
 
-        @JvmStatic
         fun fromCode(code: String): CourseClassification {
             return entries.firstOrNull { it.code.isNotBlank() && it.code == code }
                 ?: throw RestApiException(INVALID_ENUM_TYPE)
         }
 
-        @JvmStatic
         fun fromLiberalArtsScreen(code: String): CourseClassification {
             val classification = fromCode(code)
 

@@ -91,7 +91,6 @@ class Member private constructor(
     }
 
     companion object {
-        @JvmStatic
         fun create(
             email: String,
             encodedPassword: String,

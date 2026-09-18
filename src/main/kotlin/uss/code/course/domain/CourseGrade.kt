@@ -5,7 +5,6 @@ import uss.code.global.exception.domain.RestApiException
 
 enum class CourseGrade(
     val code: String,
-    @get:JvmName("getName")
     val displayName: String,
     val year: Int,
 ) {
@@ -16,7 +15,6 @@ enum class CourseGrade(
     ALL("0", "전학년", -1);
 
     companion object {
-        @JvmStatic
         fun fromCode(code: String): CourseGrade {
             return entries.firstOrNull { it.code.isNotBlank() && it.code == code }
                 ?: throw RestApiException(INVALID_ENUM_TYPE)

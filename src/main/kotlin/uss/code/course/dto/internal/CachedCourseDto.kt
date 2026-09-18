@@ -30,7 +30,6 @@ data class CachedCourseDto(
         private const val NO_COURSE_AREA = ""
         private const val LONG_LESSON_TAG = "75분수업"
 
-        @JvmStatic
         fun from(course: Course): CachedCourseDto {
             return CachedCourseDto(
                 id = course.id,

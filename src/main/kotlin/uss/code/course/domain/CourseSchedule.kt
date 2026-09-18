@@ -59,7 +59,6 @@ class CourseSchedule private constructor(
     companion object {
         private const val LONG_LESSON_CODE_PREFIX = "B"
 
-        @JvmStatic
         fun create(
             dayOfWeek: CourseDay,
             periodCode: String,

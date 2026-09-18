@@ -4,7 +4,6 @@ import uss.code.global.exception.domain.ExceptionCode.INVALID_ENUM_TYPE
 import uss.code.global.exception.domain.RestApiException
 
 enum class MemberCollege(
-    @get:JvmName("getName")
     val displayName: String,
 ) {
     HUMANITIES("인문대학"),
@@ -23,7 +22,6 @@ enum class MemberCollege(
     LAW("법학부");
 
     companion object {
-        @JvmStatic
         fun from(value: String): MemberCollege {
             return entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
                 ?: throw RestApiException(INVALID_ENUM_TYPE)

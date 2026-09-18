@@ -17,12 +17,10 @@ object AdminEndpoint {
         ),
     )
 
-    @JvmStatic
     fun isAdminPath(uri: String): Boolean {
         return uri == ADMIN_BASE_PATH || uri.startsWith("$ADMIN_BASE_PATH$PATH_DELIMITER")
     }
 
-    @JvmStatic
     fun isWhitelisted(
         path: String,
         method: String,

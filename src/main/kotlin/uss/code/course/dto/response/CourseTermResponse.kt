@@ -2,7 +2,6 @@ package uss.code.course.dto.response
 
 import uss.code.course.dto.internal.CourseTermInfoDto
 
-@JvmRecord
 data class CourseTermResponse(
     val academicYear: Int,
 
@@ -11,7 +10,6 @@ data class CourseTermResponse(
     val termName: String,
 ) {
     companion object {
-        @JvmStatic
         fun from(courseTermInfo: CourseTermInfoDto): CourseTermResponse {
             return CourseTermResponse(
                 academicYear = courseTermInfo.academicYear,

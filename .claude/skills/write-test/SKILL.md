@@ -24,7 +24,7 @@ effort: xhigh
 
 1. $ARGUMENTS의 클래스명으로 대상 클래스 파일을 Grep/Glob으로 찾아 Read로 읽어라
 2. 클래스의 public 메서드 목록과 각 메서드의 분기(if/switch/예외)를 파악하라
-3. 클래스가 의존하는 다른 클래스(생성자 파라미터, 필드 주입)를 목록화하라
+3. 클래스가 의존하는 다른 클래스(생성자 파라미터)를 목록화하라
 
 > 다음 Phase 조건: 대상 클래스의 메서드와 의존성 목록이 파악되었을 때
 
@@ -32,7 +32,7 @@ effort: xhigh
 
 ## Phase 2: Fixture 확인 및 생성
 
-1. `src/test/java/uss/code/{domain}/fixture/` 디렉토리를 Glob으로 확인하라
+1. `src/test/kotlin/uss/code/{domain}/fixture/` 디렉토리를 Glob으로 확인하라
 2. 필요한 Entity의 Fixture가 이미 존재하면 해당 파일을 읽고 재사용하라
 3. 존재하지 않으면 [template/test-code-template.md](template/test-code-template.md)의 Fixture 섹션을 참조하여 생성하라
 
@@ -49,8 +49,8 @@ effort: xhigh
 4. Phase 1에서 파악한 각 메서드에 대해 다음 테스트 케이스를 작성하라:
    - 정상 동작 (성공 케이스)
    - 예외 발생 (실패 케이스: 존재하지 않음, 권한 없음, 중복 등)
-     - **`RestApiException`을 던지는 케이스는 반드시 `exceptionCode`까지 검증**한다 (예: `.isInstanceOf(RestApiException.class).hasFieldOrPropertyWithValue("exceptionCode", {CODE})`). 타입만 검증하면 다른 코드로 회귀해도 통과하므로 회귀 감지가 불가능하다.
-     - `ExceptionCode`는 static import로 식별자만 노출한다 (`ExceptionCode.X` 표기 금지).
+     - **`RestApiException`을 던지는 케이스는 반드시 `exceptionCode`까지 검증**한다 (예: `.isInstanceOf(RestApiException::class.java).hasFieldOrPropertyWithValue("exceptionCode", {CODE})`). 타입만 검증하면 다른 코드로 회귀해도 통과하므로 회귀 감지가 불가능하다.
+     - `ExceptionCode` 항목은 개별 import로 식별자만 노출한다 (`ExceptionCode.X` 표기 금지).
    - 엣지 케이스 (경계값, 빈 리스트, null 등 — 해당하는 경우만)
 
 > 다음 Phase 조건: 테스트 파일 작성이 완료되었을 때
@@ -70,8 +70,7 @@ effort: xhigh
 ## Phase 5: 테스트 실행
 
 1. 테스트를 Bash로 실행하라 (H2):
-   - 인자가 비어 있으면 전체 실행. 명령은 `.claude/CLAUDE.md`의 **macOS에서 테스트 전체 실행**을 그대로 쓴다.
-     인자 없는 `./gradlew test`를 쓰지 마라 - macOS에서 한글 `@Nested` 클래스를 로드하지 못해 완주하지 않는다
+   - 인자가 비어 있으면 전체 실행: `./gradlew test`
    - 인자가 있으면 해당 클래스/메서드만 실행: `./gradlew test --tests "{패키지}.{테스트클래스명}"`
    - `@MySqlIntegrationTest` 클래스는 Docker가 꺼져 있으면 조용히 skip된다.
      결과를 보고하기 전에 skip 수를 확인하고, 이번에 작성한 테스트가 skip됐으면 Docker를 켜고 다시 실행하라

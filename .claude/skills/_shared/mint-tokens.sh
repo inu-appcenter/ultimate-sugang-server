@@ -6,7 +6,7 @@
 #   수백 개 계정을 가입 API로 만드는 것보다 시드 id에 맞춰 직접 서명하는 편이 측정 준비에 맞다.
 #   토큰은 JwtProvider와 같은 방식으로 직접 서명해서 만든다.
 #
-# JwtProvider가 만드는 회원 토큰의 형태 (auth/infra/JwtProvider.java):
+# JwtProvider가 만드는 회원 토큰의 형태 (auth/infra/JwtProvider.kt):
 #   - 알고리즘 HS256, 키는 secret-key 문자열의 UTF-8 바이트 그대로
 #   - subject = memberId (문자열)
 #   - role 클레임 없음 (있으면 관리자 토큰으로 간주되어 JwtAuthenticationFilter가 거절한다)

@@ -2,77 +2,76 @@
 
 ## 통합 테스트
 
-```java
-package uss.code.{domain}.service;
+```kotlin
+package uss.code.{domain}.service
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import uss.code.global.exception.domain.RestApiException;
-import uss.code.global.infra.IntegrationTest;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static uss.code.global.exception.domain.ExceptionCode.{ERROR_CODE};
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import uss.code.global.exception.domain.ExceptionCode.{ERROR_CODE}
+import uss.code.global.exception.domain.RestApiException
+import uss.code.global.infra.IntegrationTest
 
 @IntegrationTest
-class {Target}Test {
+class {Target}Test(
+    private val target: {TargetClass},
 
-    @Autowired
-    private {TargetClass} target;
-
-    @Autowired
-    private {Repository} repository;
-
+    private val repository: {Repository},
+) {
     @Nested
-    class {기능}_테스트 {
-
+    inner class {기능}_테스트 {
         @BeforeEach
-        void setUp() {
+        fun setUp() {
             // 테스트 데이터 준비 (repository.save/saveAll)
         }
 
         @Test
-        void 정상_동작하면_성공한다() {
+        fun 정상_동작하면_성공한다() {
             //given
 
             //when
-            ... result = target.method(param);
+            val result = target.method(param)
 
             //then
-            assertThat(result)...;
+            assertThat(result)...
         }
 
         @Test
-        void 존재하지_않으면_예외가_발생한다() {
+        fun 존재하지_않으면_예외가_발생한다() {
             //given
 
             //when & then
             // 예외 타입과 exceptionCode를 함께 검증한다 (코드 누락 시 회귀 감지 불가)
-            assertThatThrownBy(() -> target.method(invalidParam))
-                    .isInstanceOf(RestApiException.class)
-                    .hasFieldOrPropertyWithValue("exceptionCode", {ERROR_CODE});
+            assertThatThrownBy { target.method(invalidParam) }
+                .isInstanceOf(RestApiException::class.java)
+                .hasFieldOrPropertyWithValue("exceptionCode", {ERROR_CODE})
         }
     }
 }
 ```
 
-## Fixture (ReflectionTestUtils)
+## Fixture (엔티티 팩토리)
 
-```java
-package uss.code.{domain}.fixture;
+```kotlin
+package uss.code.{domain}.fixture
 
-import org.springframework.test.util.ReflectionTestUtils;
-import uss.code.{domain}.domain.{Entity};
+import org.springframework.test.util.ReflectionTestUtils
+import uss.code.{domain}.domain.{Entity}
 
-public class {Entity}Fixture {
+object {Entity}Fixture {
+    fun create{Entity}(
+        {field}: {Type},
+        {stateField}: {StateType},
+    ): {Entity} {
+        val entity = {Entity}.create(
+            {field} = {field},
+        )
+        // 팩토리가 받지 않는 값(현재 인원, 생성 시각처럼 도메인 흐름이 바꾸는 값)만 리플렉션으로 채운다
+        ReflectionTestUtils.setField(entity, "{stateField}", {stateField})
 
-    public static {Entity} create{Entity}(...) {
-        {Entity} entity = new {Entity}();
-        ReflectionTestUtils.setField(entity, "{field}", value);
-        // ... 필요한 필드마다 setField
-        return entity;
+        return entity
     }
 }
 ```

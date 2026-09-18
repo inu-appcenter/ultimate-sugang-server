@@ -61,3 +61,6 @@ kotlin-reference/
 
 # Kotlin 학습 노트 (개인용)
 /NOTE.md
+
+# Kotlin 마이그레이션 진행 기록 (로컬 작업용)
+.claude/resources/kotlin-migration/TODO.md

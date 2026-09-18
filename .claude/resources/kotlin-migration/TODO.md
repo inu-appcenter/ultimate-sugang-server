@@ -28,7 +28,10 @@
 - U17 완료 (2026-09-18, `clean` 뒤 컴파일 통과). `src/main/java/uss/code/auth`가 모두 옮겨져 비었다
 - U18 완료 (2026-09-18). **레이어 5가 끝나 `clean` 뒤 전체 테스트를 돌렸고 363개 중 실패 0이다** (스킵 6개는 Docker가 필요한 `CourseServiceSearchTest`)
 - **단위 U1~U18이 모두 끝났다.** `src/main/java`에 남은 Java 39개는 모두 동기화 코드(#127 대상)다: `admin`의 controller·domain·dto·event·infra·repository·service, `course/domain`의 `CourseFieldChange`, `CourseSnapshot`
-- **다음: 6단계 마무리.** 조건이 "Java 코드가 남아 있지 않을 때"라 #127(동기화 코드 제거)이 먼저다. 순서는 사용자와 정한다
+- #127 동기화 제거 (2026-09-18). `refactor/127-remove-course-sync`가 dev에서 갈라진 뒤 커밋이 없어, 126 HEAD로 fast-forward한 뒤 Kotlin 코드 기준으로 작업했다 (사용자 결정. dev 기준이면 `Course`, `ExceptionCode`, `CourseSummaryResponse`, `AdminCourseService`가 수정/삭제 충돌이 난다)
+  - `clean` 뒤 전체 테스트 303개 실패 0 (지운 테스트 60개). **`src/main/java`가 비었다**
+  - 사용자 결정: 요약 응답의 `lastJob`·`runningJobId` 제거, `Course`는 개별 필드 생성자 + `create` 유지, `reopen`·`replaceSchedules`·비동기 설정 삭제, 동기화 테이블 DROP(`V1_16`)
+- **다음: 6단계 마무리** (#127을 126에 합친 뒤)
 - 커밋: U1~U7(c4220b8), U8(019bd9a), U9~U10(9392706), U11~U13(6928c5a), 컨벤션 정리(38157d8)까지 커밋했다. 이 파일은 c4220b8 뒤로 커밋하지 않았다
   - 컨벤션 정리 커밋은 `=` 본문을 블록으로 바꾼 것과 의존성 그룹 순서 변경이다. 두 커밋 모두 스냅샷을 따로 꺼내 전체 테스트 363개 통과를 확인했다
   - `.claude/skills/implement/SKILL.md`의 한 줄 수정은 마이그레이션과 무관하다. 커밋에서 뺀다

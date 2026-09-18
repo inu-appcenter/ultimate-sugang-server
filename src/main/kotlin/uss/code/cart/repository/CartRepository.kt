@@ -1,11 +1,9 @@
 package uss.code.cart.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import uss.code.cart.domain.Cart
-import uss.code.course.domain.CourseTerm
 
 interface CartRepository : JpaRepository<Cart, Long> {
     @Query("""
@@ -28,30 +26,4 @@ interface CartRepository : JpaRepository<Cart, Long> {
         @Param("memberId") memberId: Long,
         @Param("courseId") courseId: Long,
     ): Cart?
-
-    @Query("""
-        SELECT COUNT(c)
-        FROM Cart c
-        WHERE c.course.academicYear = :academicYear
-          AND c.course.term = :term
-    """)
-    fun countBySemester(
-        @Param("academicYear") academicYear: Int,
-        @Param("term") term: CourseTerm,
-    ): Long
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("""
-        DELETE FROM Cart c
-        WHERE c.course IN (
-            SELECT course
-            FROM Course course
-            WHERE course.academicYear = :academicYear
-              AND course.term = :term
-        )
-    """)
-    fun deleteBySemester(
-        @Param("academicYear") academicYear: Int,
-        @Param("term") term: CourseTerm,
-    )
 }

@@ -10,7 +10,30 @@ import uss.code.course.domain.CourseStatus.CLOSED
 @Entity
 @Table(name = "courses")
 class Course private constructor(
-    snapshot: CourseSnapshot,
+    academicYear: Int,
+    term: CourseTerm,
+    titleKr: String,
+    titleEn: String,
+    courseCode: String,
+    haksuCode: String,
+    college: CourseCollege,
+    department: CourseDepartment,
+    classificationCode: String,
+    classificationName: String,
+    area: CourseArea,
+    areaCode: String,
+    areaName: String,
+    typeCode: String,
+    typeName: String,
+    gradeCode: String,
+    gradeName: String,
+    concentrationCode: String,
+    concentrationName: String,
+    credits: Int,
+    isEnglishCourse: Boolean,
+    englishCode: String,
+    englishName: String,
+    isHussCourse: Boolean,
     maxCapacity: Int,
 ) {
     @Id
@@ -24,103 +47,103 @@ class Course private constructor(
         protected set
 
     @Column(nullable = false, name = "academic_year")
-    var academicYear: Int = snapshot.academicYear
+    var academicYear: Int = academicYear
         protected set
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "term")
-    var term: CourseTerm = snapshot.term
+    var term: CourseTerm = term
         protected set
 
     @Column(nullable = false, name = "title_kr")
-    var titleKr: String = snapshot.titleKr
+    var titleKr: String = titleKr
         protected set
 
     @Column(nullable = false, name = "title_en")
-    var titleEn: String = snapshot.titleEn
+    var titleEn: String = titleEn
         protected set
 
     @Column(nullable = false, name = "course_code")
-    var courseCode: String = snapshot.courseCode
+    var courseCode: String = courseCode
         protected set
 
     @Column(nullable = false, name = "haksu_code")
-    var haksuCode: String = snapshot.haksuCode
+    var haksuCode: String = haksuCode
         protected set
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "college")
-    var college: CourseCollege = snapshot.college
+    var college: CourseCollege = college
         protected set
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "department")
-    var department: CourseDepartment = snapshot.department
+    var department: CourseDepartment = department
         protected set
 
     @Column(nullable = false, name = "classification_code")
-    var classificationCode: String = snapshot.classificationCode
+    var classificationCode: String = classificationCode
         protected set
 
     @Column(nullable = false, name = "classification_name")
-    var classificationName: String = snapshot.classificationName
+    var classificationName: String = classificationName
         protected set
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "area")
-    var area: CourseArea = snapshot.area
+    var area: CourseArea = area
         protected set
 
     @Column(nullable = false, name = "area_code")
-    var areaCode: String = snapshot.areaCode
+    var areaCode: String = areaCode
         protected set
 
     @Column(nullable = false, name = "area_name")
-    var areaName: String = snapshot.areaName
+    var areaName: String = areaName
         protected set
 
     @Column(nullable = false, name = "type_code")
-    var typeCode: String = snapshot.typeCode
+    var typeCode: String = typeCode
         protected set
 
     @Column(nullable = false, name = "type_name")
-    var typeName: String = snapshot.typeName
+    var typeName: String = typeName
         protected set
 
     @Column(nullable = false, name = "grade_code")
-    var gradeCode: String = snapshot.gradeCode
+    var gradeCode: String = gradeCode
         protected set
 
     @Column(nullable = false, name = "grade_name")
-    var gradeName: String = snapshot.gradeName
+    var gradeName: String = gradeName
         protected set
 
     @Column(nullable = false, name = "concentration_code")
-    var concentrationCode: String = snapshot.concentrationCode
+    var concentrationCode: String = concentrationCode
         protected set
 
     @Column(nullable = false, name = "concentration_name")
-    var concentrationName: String = snapshot.concentrationName
+    var concentrationName: String = concentrationName
         protected set
 
     @Column(nullable = false)
-    var credits: Int = snapshot.credits
+    var credits: Int = credits
         protected set
 
     @Column(nullable = false, name = "is_english_course")
-    var isEnglishCourse: Boolean = snapshot.isEnglishCourse
+    var isEnglishCourse: Boolean = isEnglishCourse
         protected set
 
     @Column(nullable = false, name = "english_code")
-    var englishCode: String = snapshot.englishCode
+    var englishCode: String = englishCode
         protected set
 
     @Column(nullable = false, name = "english_name")
-    var englishName: String = snapshot.englishName
+    var englishName: String = englishName
         protected set
 
     @Column(nullable = false, name = "is_huss_course")
-    var isHussCourse: Boolean = snapshot.isHussCourse
+    var isHussCourse: Boolean = isHussCourse
         protected set
 
     @Column(nullable = false, name = "max_capacity")
@@ -140,39 +163,8 @@ class Course private constructor(
     var status: CourseStatus = ACTIVE
         protected set
 
-    fun applyUpdate(snapshot: CourseSnapshot): MutableList<CourseFieldChange> {
-        val changes = mutableListOf<CourseFieldChange>()
-
-        replaceIfChanged(changes, FIELD_TITLE_KR, titleKr, snapshot.titleKr) { titleKr = it }
-        replaceIfChanged(changes, FIELD_TITLE_EN, titleEn, snapshot.titleEn) { titleEn = it }
-        replaceIfChanged(changes, FIELD_COURSE_CODE, courseCode, snapshot.courseCode) { courseCode = it }
-        replaceIfChanged(changes, FIELD_CREDITS, credits, snapshot.credits) { credits = it }
-        replaceIfChanged(changes, FIELD_HUSS_COURSE, isHussCourse, snapshot.isHussCourse) { isHussCourse = it }
-
-        replaceIfChanged(changes, FIELD_COLLEGE, college, snapshot.college, CourseCollege::displayName) { college = it }
-        replaceIfChanged(changes, FIELD_DEPARTMENT, department, snapshot.department, CourseDepartment::displayName) { department = it }
-
-        replaceClassification(changes, snapshot)
-        replaceArea(changes, snapshot)
-        replaceType(changes, snapshot)
-        replaceGrade(changes, snapshot)
-        replaceConcentration(changes, snapshot)
-        replaceEnglish(changes, snapshot)
-
-        return changes
-    }
-
-    fun replaceSchedules(schedules: List<CourseSchedule>) {
-        this.schedules.clear()
-        schedules.forEach(this::addCourseSchedule)
-    }
-
     fun close() {
         this.status = CLOSED
-    }
-
-    fun reopen() {
-        this.status = ACTIVE
     }
 
     fun isActive(): Boolean {
@@ -192,138 +184,62 @@ class Course private constructor(
         return currentEnrollment < maxCapacity
     }
 
-    private fun replaceClassification(
-        changes: MutableList<CourseFieldChange>,
-        snapshot: CourseSnapshot,
-    ) {
-        if (isSameCodePair(classificationCode, classificationName, snapshot.classificationCode, snapshot.classificationName)) {
-            return
-        }
-
-        changes.add(CourseFieldChange.of(FIELD_CLASSIFICATION, classificationName, snapshot.classificationName))
-        this.classificationCode = snapshot.classificationCode
-        this.classificationName = snapshot.classificationName
-    }
-
-    private fun replaceArea(
-        changes: MutableList<CourseFieldChange>,
-        snapshot: CourseSnapshot,
-    ) {
-        if (isSameCodePair(areaCode, areaName, snapshot.areaCode, snapshot.areaName)) {
-            return
-        }
-
-        changes.add(CourseFieldChange.of(FIELD_AREA, areaName, snapshot.areaName))
-        this.area = snapshot.area
-        this.areaCode = snapshot.areaCode
-        this.areaName = snapshot.areaName
-    }
-
-    private fun replaceType(
-        changes: MutableList<CourseFieldChange>,
-        snapshot: CourseSnapshot,
-    ) {
-        if (isSameCodePair(typeCode, typeName, snapshot.typeCode, snapshot.typeName)) {
-            return
-        }
-
-        changes.add(CourseFieldChange.of(FIELD_TYPE, typeName, snapshot.typeName))
-        this.typeCode = snapshot.typeCode
-        this.typeName = snapshot.typeName
-    }
-
-    private fun replaceGrade(
-        changes: MutableList<CourseFieldChange>,
-        snapshot: CourseSnapshot,
-    ) {
-        if (isSameCodePair(gradeCode, gradeName, snapshot.gradeCode, snapshot.gradeName)) {
-            return
-        }
-
-        changes.add(CourseFieldChange.of(FIELD_GRADE, gradeName, snapshot.gradeName))
-        this.gradeCode = snapshot.gradeCode
-        this.gradeName = snapshot.gradeName
-    }
-
-    private fun replaceConcentration(
-        changes: MutableList<CourseFieldChange>,
-        snapshot: CourseSnapshot,
-    ) {
-        if (isSameCodePair(concentrationCode, concentrationName, snapshot.concentrationCode, snapshot.concentrationName)) {
-            return
-        }
-
-        changes.add(CourseFieldChange.of(FIELD_CONCENTRATION, concentrationName, snapshot.concentrationName))
-        this.concentrationCode = snapshot.concentrationCode
-        this.concentrationName = snapshot.concentrationName
-    }
-
-    private fun replaceEnglish(
-        changes: MutableList<CourseFieldChange>,
-        snapshot: CourseSnapshot,
-    ) {
-        if (isEnglishCourse == snapshot.isEnglishCourse &&
-            isSameCodePair(englishCode, englishName, snapshot.englishCode, snapshot.englishName)
-        ) {
-            return
-        }
-
-        changes.add(CourseFieldChange.of(FIELD_ENGLISH_COURSE, englishName, snapshot.englishName))
-        this.isEnglishCourse = snapshot.isEnglishCourse
-        this.englishCode = snapshot.englishCode
-        this.englishName = snapshot.englishName
-    }
-
-    private fun isSameCodePair(
-        currentCode: String,
-        currentName: String,
-        updatedCode: String,
-        updatedName: String,
-    ): Boolean {
-        return currentCode == updatedCode && currentName == updatedName
-    }
-
-    private fun <T> replaceIfChanged(
-        changes: MutableList<CourseFieldChange>,
-        field: String,
-        current: T,
-        updated: T,
-        toText: (T) -> String = { it.toString() },
-        setter: (T) -> Unit,
-    ) {
-        if (current == updated) {
-            return
-        }
-
-        changes.add(CourseFieldChange.of(field, toText(current), toText(updated)))
-        setter(updated)
-    }
-
     companion object {
         private const val INITIAL_ENROLLMENT = 0
         private const val INITIAL_CART_COUNT = 0
 
-        private const val FIELD_TITLE_KR = "titleKr"
-        private const val FIELD_TITLE_EN = "titleEn"
-        private const val FIELD_COURSE_CODE = "courseCode"
-        private const val FIELD_CREDITS = "credits"
-        private const val FIELD_COLLEGE = "college"
-        private const val FIELD_DEPARTMENT = "department"
-        private const val FIELD_CLASSIFICATION = "classification"
-        private const val FIELD_AREA = "area"
-        private const val FIELD_TYPE = "type"
-        private const val FIELD_GRADE = "grade"
-        private const val FIELD_CONCENTRATION = "concentration"
-        private const val FIELD_ENGLISH_COURSE = "isEnglishCourse"
-        private const val FIELD_HUSS_COURSE = "isHussCourse"
-
-        @JvmStatic
         fun create(
-            snapshot: CourseSnapshot,
+            academicYear: Int,
+            term: CourseTerm,
+            titleKr: String,
+            titleEn: String,
+            courseCode: String,
+            haksuCode: String,
+            college: CourseCollege,
+            department: CourseDepartment,
+            classificationCode: String,
+            classificationName: String,
+            area: CourseArea,
+            areaCode: String,
+            areaName: String,
+            typeCode: String,
+            typeName: String,
+            gradeCode: String,
+            gradeName: String,
+            concentrationCode: String,
+            concentrationName: String,
+            credits: Int,
+            isEnglishCourse: Boolean,
+            englishCode: String,
+            englishName: String,
+            isHussCourse: Boolean,
             maxCapacity: Int,
         ): Course {
             return Course(
-                snapshot = snapshot,
+                academicYear = academicYear,
+                term = term,
+                titleKr = titleKr,
+                titleEn = titleEn,
+                courseCode = courseCode,
+                haksuCode = haksuCode,
+                college = college,
+                department = department,
+                classificationCode = classificationCode,
+                classificationName = classificationName,
+                area = area,
+                areaCode = areaCode,
+                areaName = areaName,
+                typeCode = typeCode,
+                typeName = typeName,
+                gradeCode = gradeCode,
+                gradeName = gradeName,
+                concentrationCode = concentrationCode,
+                concentrationName = concentrationName,
+                credits = credits,
+                isEnglishCourse = isEnglishCourse,
+                englishCode = englishCode,
+                englishName = englishName,
+                isHussCourse = isHussCourse,
                 maxCapacity = maxCapacity,
             )
         }

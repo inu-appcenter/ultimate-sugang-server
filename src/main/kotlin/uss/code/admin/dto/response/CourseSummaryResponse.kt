@@ -1,7 +1,6 @@
 package uss.code.admin.dto.response
 
 import io.swagger.v3.oas.annotations.media.Schema
-import uss.code.admin.dto.common.LastJobInfo
 import uss.code.admin.dto.internal.SemesterRefDto
 
 @JvmRecord
@@ -20,15 +19,6 @@ data class CourseSummaryResponse(
         example = "2847"
     )
     val scheduleCount: Long,
-
-    @field:Schema(description = "가장 최근 동기화 작업. 이력이 없으면 null")
-    val lastJob: LastJobInfo?,
-
-    @field:Schema(
-        description = "진행 중인 작업 아이디. 없으면 null",
-        example = "41"
-    )
-    val runningJobId: Long?,
 ) {
     companion object {
         @JvmStatic
@@ -36,15 +26,11 @@ data class CourseSummaryResponse(
             semester: SemesterRefDto?,
             courseCount: Long,
             scheduleCount: Long,
-            lastJob: LastJobInfo?,
-            runningJobId: Long?,
         ): CourseSummaryResponse {
             return CourseSummaryResponse(
                 semester = semester,
                 courseCount = courseCount,
                 scheduleCount = scheduleCount,
-                lastJob = lastJob,
-                runningJobId = runningJobId,
             )
         }
     }

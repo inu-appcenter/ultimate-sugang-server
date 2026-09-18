@@ -50,13 +50,6 @@ spring:
       - classpath:database/migration
       - classpath:database/seed
 
-inu:
-  course-api:
-    # InuCourseApiProperties가 바인딩한다. 비우면 기동에 실패하므로 자리만 채운다.
-    base-url: http://localhost/unused-in-perf-profile
-    auth-key: unused
-    mod-date: "20260101"
-
 cache:
   major-courses:
     refresh-cron: "0 0 4 * * *"

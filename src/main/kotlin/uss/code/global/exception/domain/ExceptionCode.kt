@@ -60,8 +60,5 @@ enum class ExceptionCode(
     ADMIN_LOGIN_FAILED(UNAUTHORIZED, "ADM-001", "아이디나 비밀번호가 맞지 않아요."),
     ADMIN_NOT_FOUND(NOT_FOUND, "ADM-002", "관리자를 찾을 수 없어요."),
     ADMIN_ACCESS_DENIED(FORBIDDEN, "ADM-003", "관리자 권한이 없어요."),
-    SYSTEM_SEMESTER_NOT_FOUND(NOT_FOUND, "ADM-004", "표시 학기 설정을 찾을 수 없어요."),
-    SYNC_JOB_ALREADY_RUNNING(CONFLICT, "ADM-005", "이미 업데이트가 진행 중이에요."),
-    SYNC_STRATEGY_MISMATCH(CONFLICT, "ADM-006", "데이터가 변경됐어요. 다시 확인해주세요."),
-    SYNC_JOB_NOT_FOUND(NOT_FOUND, "ADM-007", "업데이트 작업을 찾을 수 없어요.")
+    SYSTEM_SEMESTER_NOT_FOUND(NOT_FOUND, "ADM-004", "표시 학기 설정을 찾을 수 없어요.")
 }

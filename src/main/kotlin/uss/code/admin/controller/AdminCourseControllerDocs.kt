@@ -12,8 +12,7 @@ import uss.code.admin.dto.response.CourseSummaryResponse
 interface AdminCourseControllerDocs {
     @Operation(
         summary = "강의 적재 현황 조회",
-        description = "적재된 학기, 강의 수, 시간표 수, 최근 동기화 작업을 조회합니다.<br>" +
-            "진행 중인 작업이 있으면 runningJobId가 채워집니다. 화면 진입 시 폴링 재개 판단에 씁니다.<br>" +
+        description = "적재된 학기, 강의 수, 시간표 수를 조회합니다.<br>" +
             "강의 수는 폐강을 포함합니다.<br>" +
             "🔐 <strong>Jwt 필요</strong> (관리자)<br>"
     )

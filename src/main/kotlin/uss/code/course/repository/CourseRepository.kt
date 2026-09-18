@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import uss.code.course.domain.Course
 import uss.code.course.domain.CourseDepartment
-import uss.code.course.domain.CourseTerm
 import uss.code.course.dto.internal.CourseCapacityDto
 import uss.code.course.dto.internal.CourseCategoryDto
 import uss.code.course.dto.internal.CourseTermInfoDto
@@ -98,29 +97,6 @@ interface CourseRepository : JpaRepository<Course, Long> {
     """)
     fun findHussCourses(): List<Course>
 
-    @Query("""
-        SELECT COUNT(c)
-        FROM Course c
-        WHERE c.academicYear = :academicYear
-          AND c.term = :term
-    """)
-    fun countBySemester(
-        @Param("academicYear") academicYear: Int,
-        @Param("term") term: CourseTerm,
-    ): Long
-
-    @Query("""
-        SELECT c
-        FROM Course c
-        LEFT JOIN FETCH c.schedules
-        WHERE c.academicYear = :academicYear
-          AND c.term = :term
-    """)
-    fun findAllBySemesterWithSchedules(
-        @Param("academicYear") academicYear: Int,
-        @Param("term") term: CourseTerm,
-    ): List<Course>
-
     @Modifying(flushAutomatically = true)
     @Query("""
         UPDATE Course c
@@ -155,15 +131,4 @@ interface CourseRepository : JpaRepository<Course, Long> {
           AND c.cartCount > 0
     """)
     fun decreaseCartCountAboveZero(@Param("id") id: Long): Int
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("""
-        DELETE FROM Course c
-        WHERE c.academicYear = :academicYear
-          AND c.term = :term
-    """)
-    fun deleteBySemester(
-        @Param("academicYear") academicYear: Int,
-        @Param("term") term: CourseTerm,
-    )
 }

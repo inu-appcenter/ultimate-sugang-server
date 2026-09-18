@@ -96,4 +96,4 @@ enum class CourseTerm(
 
 ## 값 객체
 
-- 여러 값을 묶어 전달하는 도메인 값 객체(Java record, 예: `CourseSnapshot`)는 `data class`로 선언하라
+- 여러 값을 묶어 전달하는 도메인 값 객체(Java record)는 `data class`로 선언하라

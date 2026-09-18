@@ -12,11 +12,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import uss.code.auth.annotation.Auth
-import uss.code.course.dto.response.CourseCategoriesResponse
-import uss.code.course.dto.response.CourseTermsResponse
-import uss.code.course.dto.response.CoursesResponse
-import uss.code.course.dto.response.DepartmentsResponse
-import uss.code.course.dto.response.InterdisciplinaryMajorsResponse
+import uss.code.course.dto.response.*
 import uss.code.global.annotation.ParamValidation
 import uss.code.global.exception.dto.response.ErrorResponse
 

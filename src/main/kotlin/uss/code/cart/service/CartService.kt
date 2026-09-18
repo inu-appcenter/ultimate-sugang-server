@@ -10,15 +10,7 @@ import uss.code.course.dto.response.CourseResponse
 import uss.code.course.dto.response.CoursesResponse
 import uss.code.course.infra.CourseValidator
 import uss.code.course.repository.CourseRepository
-import uss.code.global.exception.domain.ExceptionCode.CARTED_COURSE_DELETE_CONFLICT
-import uss.code.global.exception.domain.ExceptionCode.CARTED_COURSE_LIMIT_EXCEEDED
-import uss.code.global.exception.domain.ExceptionCode.CARTED_COURSE_NOT_FOUND
-import uss.code.global.exception.domain.ExceptionCode.COURSE_ALREADY_IN_CART
-import uss.code.global.exception.domain.ExceptionCode.COURSE_CLOSED
-import uss.code.global.exception.domain.ExceptionCode.COURSE_NOT_FOUND
-import uss.code.global.exception.domain.ExceptionCode.COURSE_SCHEDULE_CONFLICT
-import uss.code.global.exception.domain.ExceptionCode.COURSE_TYPE_LIMIT_EXCEEDED
-import uss.code.global.exception.domain.ExceptionCode.MEMBER_NOT_FOUND
+import uss.code.global.exception.domain.ExceptionCode.*
 import uss.code.global.exception.domain.RestApiException
 import uss.code.member.repository.MemberRepository
 

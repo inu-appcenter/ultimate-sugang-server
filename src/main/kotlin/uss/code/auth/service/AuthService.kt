@@ -12,17 +12,9 @@ import uss.code.auth.dto.response.StudentIdAvailabilityResponse
 import uss.code.auth.infra.JwtProvider
 import uss.code.auth.infra.MemberPasswordEncoder
 import uss.code.global.exception.domain.ExceptionCode
-import uss.code.global.exception.domain.ExceptionCode.COLLEGE_DEPARTMENT_MISMATCH
-import uss.code.global.exception.domain.ExceptionCode.EMAIL_ALREADY_EXISTS
-import uss.code.global.exception.domain.ExceptionCode.MEMBER_NOT_FOUND
-import uss.code.global.exception.domain.ExceptionCode.PASSWORD_NOT_MATCH
-import uss.code.global.exception.domain.ExceptionCode.STUDENT_ID_ALREADY_EXISTS
+import uss.code.global.exception.domain.ExceptionCode.*
 import uss.code.global.exception.domain.RestApiException
-import uss.code.member.domain.AcademicStatus
-import uss.code.member.domain.Member
-import uss.code.member.domain.MemberCollege
-import uss.code.member.domain.MemberDepartment
-import uss.code.member.domain.MemberGrade
+import uss.code.member.domain.*
 import uss.code.member.repository.MemberRepository
 
 @Service

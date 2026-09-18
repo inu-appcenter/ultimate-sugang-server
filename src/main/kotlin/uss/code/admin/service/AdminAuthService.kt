@@ -8,9 +8,7 @@ import uss.code.admin.dto.response.AdminTokenResponse
 import uss.code.admin.infra.AdminPasswordEncoder
 import uss.code.admin.repository.AdminRepository
 import uss.code.auth.infra.JwtProvider
-import uss.code.global.exception.domain.ExceptionCode.ADMIN_ACCESS_DENIED
-import uss.code.global.exception.domain.ExceptionCode.ADMIN_LOGIN_FAILED
-import uss.code.global.exception.domain.ExceptionCode.ADMIN_NOT_FOUND
+import uss.code.global.exception.domain.ExceptionCode.*
 import uss.code.global.exception.domain.RestApiException
 
 @Service

@@ -4,7 +4,7 @@
 
 ## 기술 스택
 
-- Java 17 / Spring Boot 4.0.1 / Gradle
+- Kotlin 2.2 (JVM 17) / Spring Boot 4.0.1 / Gradle
 - JPA + MySQL + Flyway (스키마 마이그레이션 `database/migration/` + 시드 데이터 `database/seed/`)
 - 커스텀 JWT 인증 (`@Auth` 파라미터 주입 + `JwtAuthenticationFilter`)
 - FULLTEXT(ngram) 기반 강의 검색
@@ -16,22 +16,9 @@
 
 ```bash
 ./gradlew build      # 빌드
-./gradlew test       # 테스트 (H2). macOS에서는 아래 전체 실행 명령을 쓴다
+./gradlew test       # 테스트 (H2)
 ./gradlew bootRun    # 로컬 실행 (MySQL 필요)
 ```
-
-### macOS에서 테스트 전체 실행
-
-```bash
-ARGS=(); for c in $(find src/test/java -name "*Test.java" | sed 's|src/test/java/||; s|\.java$||; s|/|.|g'); do ARGS+=(--tests "$c"); done
-./gradlew cleanTest test "${ARGS[@]}"
-```
-
-인자 없는 `./gradlew test`는 macOS에서 완주하지 못한다.
-APFS가 파일명을 NFD로 저장하는데 클래스 파일 안의 이름은 NFC라, Gradle이 디렉토리를 훑어
-한글 `@Nested` 클래스를 로드할 때 이름이 어긋나 `NoClassDefFoundError (wrong name: ...)`로 죽는다.
-클래스를 `--tests`로 명시하면 파일명이 아니라 클래스명으로 로드해 이 경로를 타지 않는다.
-ext4를 쓰는 CI(Linux)에서는 나지 않으므로 CI 워크플로는 그대로 둔다.
 
 ## 상호작용 규칙
 
@@ -58,12 +45,15 @@ ext4를 쓰는 CI(Linux)에서는 나지 않으므로 CI 워크플로는 그대�
 - 프로젝트 구조 (패키지 배치) → `project-structure.md`
 - Flyway 마이그레이션 / SQL → `migration.md`
 - 코드 컨벤션 → `code-convention/`
-  - 공통 (네이밍, 포맷팅, 예외, 객체 생성, 상수, 레이어 흐름) → `common.md`
-  - Entity(domain) + DB 매핑 → `domain.md`
-  - DTO(Request/Response) → `dto.md`
-  - Controller → `controller.md`
-  - Service → `service.md`
-  - Repository → `repository.md`
+  - Java → `java/` (`src/main/java`에 적용)
+    - 공통 (네이밍, 포맷팅, 예외, 객체 생성, 상수, 레이어 흐름) → `common.md`
+    - Entity(domain) + DB 매핑 → `domain.md`
+    - DTO(Request/Response) → `dto.md`
+    - Controller → `controller.md`
+    - Service → `service.md`
+    - Repository → `repository.md`
+  - Kotlin → `kotlin/` (Java 규칙을 계승, `src/main/kotlin`에 적용)
+    - 파일 구성은 Java와 같다 (`common.md`, `domain.md`, `dto.md`, `controller.md`, `service.md`, `repository.md`)
 
 `.claude/spec/` — 스킬·작업에서 필요할 때만 참조 (자동 로드 아님)
 

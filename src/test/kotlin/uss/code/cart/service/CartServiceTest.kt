@@ -1,0 +1,894 @@
+package uss.code.cart.service
+
+import jakarta.persistence.EntityManager
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import uss.code.cart.fixture.CartFixture
+import uss.code.cart.repository.CartRepository
+import uss.code.course.domain.CourseClassification
+import uss.code.course.domain.CourseDay
+import uss.code.course.domain.CourseGrade
+import uss.code.course.domain.CourseType
+import uss.code.course.fixture.CourseFixture
+import uss.code.course.fixture.CourseScheduleFixture
+import uss.code.course.repository.CourseRepository
+import uss.code.global.exception.domain.ExceptionCode.CARTED_COURSE_DELETE_CONFLICT
+import uss.code.global.exception.domain.ExceptionCode.CARTED_COURSE_LIMIT_EXCEEDED
+import uss.code.global.exception.domain.ExceptionCode.CARTED_COURSE_NOT_FOUND
+import uss.code.global.exception.domain.ExceptionCode.COURSE_ALREADY_IN_CART
+import uss.code.global.exception.domain.ExceptionCode.COURSE_CLOSED
+import uss.code.global.exception.domain.ExceptionCode.COURSE_NOT_FOUND
+import uss.code.global.exception.domain.ExceptionCode.COURSE_SCHEDULE_CONFLICT
+import uss.code.global.exception.domain.ExceptionCode.COURSE_TYPE_LIMIT_EXCEEDED
+import uss.code.global.exception.domain.ExceptionCode.MEMBER_NOT_FOUND
+import uss.code.global.exception.domain.RestApiException
+import uss.code.global.infra.IntegrationTest
+import uss.code.member.fixture.MemberFixture
+import uss.code.member.repository.MemberRepository
+import java.time.LocalDateTime
+import java.time.LocalTime
+
+@IntegrationTest
+class CartServiceTest(
+    private val cartService: CartService,
+
+    private val cartRepository: CartRepository,
+    private val memberRepository: MemberRepository,
+    private val courseRepository: CourseRepository,
+
+    private val entityManager: EntityManager,
+) {
+    @Nested
+    inner class 장바구니_조회_테스트 {
+        private var testMemberId = 0L
+        private var otherMemberId = 0L
+
+        @BeforeEach
+        fun setUp() {
+            // 회원 생성
+            val testMember = MemberFixture.createMember()
+            val otherMember = MemberFixture.createMember()
+            memberRepository.saveAll(listOf(testMember, otherMember))
+            testMemberId = testMember.id
+            otherMemberId = otherMember.id
+
+            // 과목 생성
+            val course1 = CourseFixture.createCourseWithDetails(
+                "자료구조", "Data Structure", "CSE101", "CSE101001",
+                CourseGrade.SOPHOMORE,
+            )
+            val course2 = CourseFixture.createCourseWithDetails(
+                "알고리즘", "Algorithm", "CSE201", "CSE201001",
+                CourseGrade.SOPHOMORE,
+            )
+            val course3 = CourseFixture.createCourseWithDetails(
+                "데이터베이스", "Database", "CSE301", "CSE301001",
+                CourseGrade.JUNIOR,
+            )
+
+            // 스케줄 추가
+            val schedule1 = CourseScheduleFixture.createCourseSchedule(
+                course1, CourseDay.MONDAY, LocalTime.of(13, 0), LocalTime.of(15, 0),
+            )
+            val schedule2 = CourseScheduleFixture.createCourseSchedule(
+                course1, CourseDay.WEDNESDAY, LocalTime.of(13, 0), LocalTime.of(15, 0),
+            )
+            val schedule3 = CourseScheduleFixture.createCourseSchedule(
+                course2, CourseDay.TUESDAY, LocalTime.of(9, 0), LocalTime.of(11, 0),
+            )
+
+            course1.addCourseSchedule(schedule1)
+            course1.addCourseSchedule(schedule2)
+            course2.addCourseSchedule(schedule3)
+
+            courseRepository.saveAll(listOf(course1, course2, course3))
+
+            // 장바구니 생성
+            // testMember: course1, course2, course3
+            val cart1 = CartFixture.createCart(testMember, course1, LocalDateTime.now().minusDays(3))
+            val cart2 = CartFixture.createCart(testMember, course2, LocalDateTime.now().minusDays(2))
+            val cart3 = CartFixture.createCart(testMember, course3, LocalDateTime.now().minusDays(1))
+
+            // otherMember: course1, course2 (같은 과목)
+            val cart4 = CartFixture.createCart(otherMember, course1)
+            val cart5 = CartFixture.createCart(otherMember, course2)
+
+            cartRepository.saveAll(listOf(cart1, cart2, cart3, cart4, cart5))
+        }
+
+        @Test
+        fun 회원의_장바구니를_조회하면_성공한다() {
+            //given
+
+            //when
+            val response = cartService.getCartedCourse(testMemberId)
+
+            //then
+            assertThat(response.courseResponses).hasSize(3)
+        }
+
+        @Test
+        fun 장바구니_담은_순서대로_정렬되어_조회된다() {
+            //given
+
+            //when
+            val response = cartService.getCartedCourse(testMemberId)
+
+            //then
+            assertThat(response.courseResponses)
+                .extracting<String> { it.courseCode }
+                .containsExactly("CSE101", "CSE201", "CSE301")
+        }
+
+        @Test
+        fun 과목별_cartCount가_올바르게_조회된다() {
+            //given
+
+            //when
+            val response = cartService.getCartedCourse(testMemberId)
+
+            //then
+            // CSE101: 2명 (testMember, otherMember)
+            val course1 = response.courseResponses.first { it.courseCode == "CSE101" }
+            assertThat(course1.cartCount).isEqualTo(2)
+
+            // CSE201: 2명
+            val course2 = response.courseResponses.first { it.courseCode == "CSE201" }
+            assertThat(course2.cartCount).isEqualTo(2)
+
+            // CSE301: 1명 (testMember만)
+            val course3 = response.courseResponses.first { it.courseCode == "CSE301" }
+            assertThat(course3.cartCount).isEqualTo(1)
+        }
+
+        @Test
+        fun 스케줄이_있는_과목은_요일순으로_정렬되어_반환된다() {
+            //given
+
+            //when
+            val response = cartService.getCartedCourse(testMemberId)
+
+            //then
+            // CSE101: [07-401:월(1-2A),수(1-2A)]
+            val course1 = response.courseResponses.first { it.courseCode == "CSE101" }
+            assertThat(course1.schedule).isEqualTo("월 1-2A (07-401) 수 1-2A (07-401)")
+
+            // CSE201: [07-401:화(1-2A)]
+            val course2 = response.courseResponses.first { it.courseCode == "CSE201" }
+            assertThat(course2.schedule).isEqualTo("화 1-2A (07-401)")
+        }
+
+        @Test
+        fun 스케줄이_없는_과목은_빈_문자열로_반환된다() {
+            //given
+
+            //when
+            val response = cartService.getCartedCourse(testMemberId)
+
+            //then
+            val course3 = response.courseResponses.first { it.courseCode == "CSE301" }
+            assertThat(course3.schedule).isEmpty()
+        }
+
+        @Test
+        fun 정원에_여유가_있는_과목은_마감이_아닌_것으로_조회된다() {
+            //given
+
+            //when
+            val response = cartService.getCartedCourse(testMemberId)
+
+            //then
+            assertThat(response.courseResponses)
+                .extracting<Boolean> { it.isClosed }
+                .containsOnly(false)
+        }
+
+        @Test
+        fun 정원이_마감된_과목은_마감으로_조회된다() {
+            //given
+            val testMember = memberRepository.findById(testMemberId).orElseThrow()
+
+            // 정원이 가득 찬 과목 생성 (maxCapacity: 2, currentEnrollment: 2)
+            val fullCourse = CourseFixture.createCourse(
+                "정원마감과목", "Full Course", "CSE999", "CSE999001",
+                CourseFixture.createCourse().college,
+                CourseFixture.createCourse().department,
+                CourseClassification.MAJOR_CORE,
+                CourseFixture.createCourse().area,
+                CourseType.LECTURE,
+                CourseGrade.SOPHOMORE,
+                3, false, 2, 2,
+            )
+            courseRepository.save(fullCourse)
+            cartRepository.save(CartFixture.createCart(testMember, fullCourse))
+
+            //when
+            val response = cartService.getCartedCourse(testMemberId)
+
+            //then
+            val fullCourseResponse = response.courseResponses.first { it.courseCode == "CSE999" }
+            assertThat(fullCourseResponse.isClosed).isTrue()
+        }
+
+        @Test
+        fun 폐강된_과목은_정원에_여유가_있어도_마감으로_조회된다() {
+            //given
+            val testMember = memberRepository.findById(testMemberId).orElseThrow()
+
+            val closedCourse = CourseFixture.createCourseWithDetails(
+                "폐강과목", "Closed Course", "CSE888", "CSE888001",
+                CourseGrade.SOPHOMORE,
+            )
+            closedCourse.close()
+            courseRepository.save(closedCourse)
+            cartRepository.save(CartFixture.createCart(testMember, closedCourse))
+
+            //when
+            val response = cartService.getCartedCourse(testMemberId)
+
+            //then
+            val closedCourseResponse = response.courseResponses.first { it.courseCode == "CSE888" }
+            assertThat(closedCourseResponse.isClosed).isTrue()
+        }
+
+        @Test
+        fun 빈_장바구니를_조회하면_빈_리스트가_반환된다() {
+            //given
+            val emptyMember = MemberFixture.createMember()
+            memberRepository.save(emptyMember)
+
+            //when
+            val response = cartService.getCartedCourse(emptyMember.id)
+
+            //then
+            assertThat(response.courseResponses).isEmpty()
+        }
+    }
+
+    @Nested
+    inner class 장바구니_삭제_테스트 {
+        private var testMemberId = 0L
+        private var otherMemberId = 0L
+        private var course1Id = 0L
+        private var course2Id = 0L
+        private var course3Id = 0L
+
+        @BeforeEach
+        fun setUp() {
+            // 회원 생성
+            val testMember = MemberFixture.createMember()
+            val otherMember = MemberFixture.createMember()
+            memberRepository.saveAll(listOf(testMember, otherMember))
+            testMemberId = testMember.id
+            otherMemberId = otherMember.id
+
+            // 과목 생성
+            val course1 = CourseFixture.createCourseWithDetails(
+                "자료구조", "Data Structure", "CSE101", "CSE101001",
+                CourseGrade.SOPHOMORE,
+            )
+            val course2 = CourseFixture.createCourseWithDetails(
+                "알고리즘", "Algorithm", "CSE201", "CSE201001",
+                CourseGrade.SOPHOMORE,
+            )
+            val course3 = CourseFixture.createCourseWithDetails(
+                "데이터베이스", "Database", "CSE301", "CSE301001",
+                CourseGrade.JUNIOR,
+            )
+
+            courseRepository.saveAll(listOf(course1, course2, course3))
+            course1Id = course1.id
+            course2Id = course2.id
+            course3Id = course3.id
+
+            // 장바구니 생성
+            // testMember: course1, course2
+            val cart1 = CartFixture.createCart(testMember, course1)
+            val cart2 = CartFixture.createCart(testMember, course2)
+
+            // otherMember: course3 (testMember와 겹치지 않음)
+            val cart3 = CartFixture.createCart(otherMember, course3)
+
+            cartRepository.saveAll(listOf(cart1, cart2, cart3))
+        }
+
+        @Test
+        fun 장바구니에서_과목을_삭제하면_성공한다() {
+            //given
+
+            //when
+            cartService.deleteCartedCourse(testMemberId, course1Id)
+
+            //then
+            val carts = cartRepository.findByMemberId(testMemberId)
+            assertThat(carts).hasSize(1)
+            assertThat(carts)
+                .extracting<Long> { it.course.id }
+                .containsExactly(course2Id)
+        }
+
+        @Test
+        fun 장바구니에서_과목_삭제_후_다른_회원의_장바구니는_영향받지_않는다() {
+            //given
+
+            //when
+            cartService.deleteCartedCourse(testMemberId, course1Id)
+
+            //then
+            // otherMember의 장바구니는 그대로 (course3)
+            val otherCarts = cartRepository.findByMemberId(otherMemberId)
+            assertThat(otherCarts).hasSize(1)
+            assertThat(otherCarts[0].course.id).isEqualTo(course3Id)
+        }
+
+        @Test
+        fun 존재하지_않는_장바구니_항목을_삭제하면_예외가_발생한다() {
+            //given
+            val nonExistentCourseId = 99999L
+
+            //when & then
+            assertThatThrownBy { cartService.deleteCartedCourse(testMemberId, nonExistentCourseId) }
+                .isInstanceOf(RestApiException::class.java)
+                .hasFieldOrPropertyWithValue("exceptionCode", CARTED_COURSE_NOT_FOUND)
+        }
+
+        @Test
+        fun 다른_회원의_장바구니_항목을_삭제하면_예외가_발생한다() {
+            //given
+            // course3은 otherMember만 장바구니에 담고 있음
+
+            //when & then
+            // testMember가 otherMember의 장바구니 항목(course3) 삭제 시도
+            assertThatThrownBy { cartService.deleteCartedCourse(testMemberId, course3Id) }
+                .isInstanceOf(RestApiException::class.java)
+                .hasFieldOrPropertyWithValue("exceptionCode", CARTED_COURSE_NOT_FOUND)
+
+            // otherMember의 장바구니는 그대로
+            val otherCarts = cartRepository.findByMemberId(otherMemberId)
+            assertThat(otherCarts).hasSize(1)
+            assertThat(otherCarts[0].course.id).isEqualTo(course3Id)
+        }
+
+        @Test
+        fun 모든_장바구니_항목을_삭제할_수_있다() {
+            //given
+
+            //when
+            cartService.deleteCartedCourse(testMemberId, course1Id)
+            cartService.deleteCartedCourse(testMemberId, course2Id)
+
+            //then
+            val carts = cartRepository.findByMemberId(testMemberId)
+            assertThat(carts).isEmpty()
+        }
+    }
+
+    @Nested
+    inner class 장바구니_추가_테스트 {
+        private var testMemberId = 0L
+        private var course1Id = 0L
+        private var course2Id = 0L
+
+        @BeforeEach
+        fun setUp() {
+            // 회원 생성
+            val testMember = MemberFixture.createMember()
+            memberRepository.save(testMember)
+            testMemberId = testMember.id
+
+            // 과목 생성
+            val course1 = CourseFixture.createCourseWithDetails(
+                "자료구조", "Data Structure", "CSE101", "CSE101001",
+                CourseGrade.SOPHOMORE,
+            )
+            val course2 = CourseFixture.createCourseWithDetails(
+                "알고리즘", "Algorithm", "CSE201", "CSE201001",
+                CourseGrade.SOPHOMORE,
+            )
+
+            // 스케줄 추가
+            val schedule1 = CourseScheduleFixture.createCourseSchedule(
+                course1, CourseDay.MONDAY, LocalTime.of(13, 0), LocalTime.of(15, 0),
+            )
+            course1.addCourseSchedule(schedule1)
+
+            val schedule2 = CourseScheduleFixture.createCourseSchedule(
+                course2, CourseDay.TUESDAY, LocalTime.of(9, 0), LocalTime.of(11, 0),
+            )
+            course2.addCourseSchedule(schedule2)
+
+            courseRepository.saveAll(listOf(course1, course2))
+            course1Id = course1.id
+            course2Id = course2.id
+        }
+
+        @Test
+        fun 장바구니에_과목을_추가하면_성공한다() {
+            //given
+
+            //when
+            cartService.addCart(testMemberId, course1Id)
+
+            //then
+            val carts = cartRepository.findByMemberId(testMemberId)
+            assertThat(carts).hasSize(1)
+            assertThat(carts[0].course.id).isEqualTo(course1Id)
+        }
+
+        @Test
+        fun 장바구니가_10개_미만이면_추가할_수_있다() {
+            //given
+            // 9개의 과목을 미리 추가
+            for (i in 0 until 9) {
+                val course = CourseFixture.createCourseWithDetails(
+                    "과목$i", "Course$i", "CSE30$i", "CSE30${i}001",
+                    CourseGrade.SOPHOMORE,
+                )
+                courseRepository.save(course)
+
+                val member = memberRepository.findById(testMemberId).orElseThrow()
+                val cart = CartFixture.createCart(member, course)
+                cartRepository.save(cart)
+            }
+
+            //when & then
+            // 10번째 추가는 성공해야 함
+            cartService.addCart(testMemberId, course1Id)
+
+            val carts = cartRepository.findByMemberId(testMemberId)
+            assertThat(carts).hasSize(10)
+        }
+
+        @Test
+        fun 장바구니가_10개_이상이면_추가할_수_없다() {
+            //given
+            // 10개의 과목을 미리 추가
+            for (i in 0 until 10) {
+                val course = CourseFixture.createCourseWithDetails(
+                    "과목$i", "Course$i", "CSE30$i", "CSE30${i}001",
+                    CourseGrade.SOPHOMORE,
+                )
+                courseRepository.save(course)
+
+                val member = memberRepository.findById(testMemberId).orElseThrow()
+                val cart = CartFixture.createCart(member, course)
+                cartRepository.save(cart)
+            }
+
+            //when & then
+            assertThatThrownBy { cartService.addCart(testMemberId, course1Id) }
+                .isInstanceOf(RestApiException::class.java)
+                .hasFieldOrPropertyWithValue("exceptionCode", CARTED_COURSE_LIMIT_EXCEEDED)
+        }
+
+        @Test
+        fun 이미_장바구니에_담긴_과목을_다시_추가하면_예외가_발생한다() {
+            //given
+            cartService.addCart(testMemberId, course1Id)
+
+            //when & then
+            assertThatThrownBy { cartService.addCart(testMemberId, course1Id) }
+                .isInstanceOf(RestApiException::class.java)
+                .hasFieldOrPropertyWithValue("exceptionCode", COURSE_ALREADY_IN_CART)
+        }
+
+        @Test
+        fun 존재하지_않는_회원이_장바구니에_추가하면_예외가_발생한다() {
+            //given
+            val nonExistentMemberId = 99999L
+
+            //when & then
+            assertThatThrownBy { cartService.addCart(nonExistentMemberId, course1Id) }
+                .isInstanceOf(RestApiException::class.java)
+                .hasFieldOrPropertyWithValue("exceptionCode", MEMBER_NOT_FOUND)
+        }
+
+        @Test
+        fun 존재하지_않는_과목을_장바구니에_추가하면_예외가_발생한다() {
+            //given
+            val nonExistentCourseId = 99999L
+
+            //when & then
+            assertThatThrownBy { cartService.addCart(testMemberId, nonExistentCourseId) }
+                .isInstanceOf(RestApiException::class.java)
+                .hasFieldOrPropertyWithValue("exceptionCode", COURSE_NOT_FOUND)
+        }
+
+        @Test
+        fun 시간표가_겹치는_과목을_추가하면_예외가_발생한다() {
+            //given
+            // course1을 먼저 추가 (월 13:00-15:00)
+            cartService.addCart(testMemberId, course1Id)
+
+            // 겹치는 시간대의 새 과목 생성 (월 14:00-16:00)
+            val conflictCourse = CourseFixture.createCourseWithDetails(
+                "운영체제", "Operating System", "CSE301", "CSE301001",
+                CourseGrade.JUNIOR,
+            )
+            val conflictSchedule = CourseScheduleFixture.createCourseSchedule(
+                conflictCourse, CourseDay.MONDAY, LocalTime.of(14, 0), LocalTime.of(16, 0),
+            )
+            conflictCourse.addCourseSchedule(conflictSchedule)
+            courseRepository.save(conflictCourse)
+
+            //when & then
+            assertThatThrownBy { cartService.addCart(testMemberId, conflictCourse.id) }
+                .isInstanceOf(RestApiException::class.java)
+                .hasFieldOrPropertyWithValue("exceptionCode", COURSE_SCHEDULE_CONFLICT)
+        }
+
+        @Test
+        fun 시간표가_겹치지_않으면_추가할_수_있다() {
+            //given
+            // course1을 먼저 추가 (월 13:00-15:00)
+            cartService.addCart(testMemberId, course1Id)
+
+            // 겹치지 않는 시간대의 새 과목 생성 (월 15:00-17:00)
+            val nonConflictCourse = CourseFixture.createCourseWithDetails(
+                "운영체제", "Operating System", "CSE301", "CSE301001",
+                CourseGrade.JUNIOR,
+            )
+            val nonConflictSchedule = CourseScheduleFixture.createCourseSchedule(
+                nonConflictCourse, CourseDay.MONDAY, LocalTime.of(15, 0), LocalTime.of(17, 0),
+            )
+            nonConflictCourse.addCourseSchedule(nonConflictSchedule)
+            courseRepository.save(nonConflictCourse)
+
+            //when
+            cartService.addCart(testMemberId, nonConflictCourse.id)
+
+            //then
+            val carts = cartRepository.findByMemberId(testMemberId)
+            assertThat(carts).hasSize(2)
+        }
+
+        @Test
+        fun OCU_과목이_2개_있으면_추가할_수_없다() {
+            //given
+            // OCU 과목 2개 생성 및 추가
+            val ocu1 = CourseFixture.createCourse(
+                "OCU과목1", "OCU Course 1", "OCU001", "OCU001001",
+                CourseFixture.createCourse().college,
+                CourseFixture.createCourse().department,
+                CourseClassification.MAJOR_CORE,
+                CourseFixture.createCourse().area,
+                CourseType.OCU,
+                CourseGrade.SOPHOMORE,
+                3, false, 50, 30,
+            )
+            val ocu2 = CourseFixture.createCourse(
+                "OCU과목2", "OCU Course 2", "OCU002", "OCU002001",
+                CourseFixture.createCourse().college,
+                CourseFixture.createCourse().department,
+                CourseClassification.MAJOR_CORE,
+                CourseFixture.createCourse().area,
+                CourseType.OCU,
+                CourseGrade.SOPHOMORE,
+                3, false, 50, 30,
+            )
+            val ocu3 = CourseFixture.createCourse(
+                "OCU과목3", "OCU Course 3", "OCU003", "OCU003001",
+                CourseFixture.createCourse().college,
+                CourseFixture.createCourse().department,
+                CourseClassification.MAJOR_CORE,
+                CourseFixture.createCourse().area,
+                CourseType.OCU,
+                CourseGrade.SOPHOMORE,
+                3, false, 50, 30,
+            )
+
+            courseRepository.saveAll(listOf(ocu1, ocu2, ocu3))
+
+            val member = memberRepository.findById(testMemberId).orElseThrow()
+            val cart1 = CartFixture.createCart(member, ocu1)
+            val cart2 = CartFixture.createCart(member, ocu2)
+            cartRepository.saveAll(listOf(cart1, cart2))
+
+            //when & then
+            assertThatThrownBy { cartService.addCart(testMemberId, ocu3.id) }
+                .isInstanceOf(RestApiException::class.java)
+                .hasFieldOrPropertyWithValue("exceptionCode", COURSE_TYPE_LIMIT_EXCEEDED)
+        }
+
+        @Test
+        fun OCU_과목이_1개_있으면_추가할_수_있다() {
+            //given
+            // OCU 과목 1개 생성 및 추가
+            val ocu1 = CourseFixture.createCourse(
+                "OCU과목1", "OCU Course 1", "OCU001", "OCU001001",
+                CourseFixture.createCourse().college,
+                CourseFixture.createCourse().department,
+                CourseClassification.MAJOR_CORE,
+                CourseFixture.createCourse().area,
+                CourseType.OCU,
+                CourseGrade.SOPHOMORE,
+                3, false, 50, 30,
+            )
+            val ocu2 = CourseFixture.createCourse(
+                "OCU과목2", "OCU Course 2", "OCU002", "OCU002001",
+                CourseFixture.createCourse().college,
+                CourseFixture.createCourse().department,
+                CourseClassification.MAJOR_CORE,
+                CourseFixture.createCourse().area,
+                CourseType.OCU,
+                CourseGrade.SOPHOMORE,
+                3, false, 50, 30,
+            )
+
+            courseRepository.saveAll(listOf(ocu1, ocu2))
+
+            val member = memberRepository.findById(testMemberId).orElseThrow()
+            val cart1 = CartFixture.createCart(member, ocu1)
+            cartRepository.save(cart1)
+
+            //when
+            cartService.addCart(testMemberId, ocu2.id)
+
+            //then
+            val carts = cartRepository.findByMemberId(testMemberId)
+            assertThat(carts).hasSize(2)
+        }
+
+        @Test
+        fun K_MOOC_과목이_1개_있으면_추가할_수_없다() {
+            //given
+            // K-MOOC 과목 1개 생성 및 추가
+            val kMooc1 = CourseFixture.createCourse(
+                "K-MOOC과목1", "K-MOOC Course 1", "KMOOC001", "KMOOC001001",
+                CourseFixture.createCourse().college,
+                CourseFixture.createCourse().department,
+                CourseClassification.MAJOR_CORE,
+                CourseFixture.createCourse().area,
+                CourseType.K_MOOC,
+                CourseGrade.SOPHOMORE,
+                3, false, 50, 30,
+            )
+            val kMooc2 = CourseFixture.createCourse(
+                "K-MOOC과목2", "K-MOOC Course 2", "KMOOC002", "KMOOC002001",
+                CourseFixture.createCourse().college,
+                CourseFixture.createCourse().department,
+                CourseClassification.MAJOR_CORE,
+                CourseFixture.createCourse().area,
+                CourseType.K_MOOC,
+                CourseGrade.SOPHOMORE,
+                3, false, 50, 30,
+            )
+
+            courseRepository.saveAll(listOf(kMooc1, kMooc2))
+
+            val member = memberRepository.findById(testMemberId).orElseThrow()
+            val cart1 = CartFixture.createCart(member, kMooc1)
+            cartRepository.save(cart1)
+
+            //when & then
+            assertThatThrownBy { cartService.addCart(testMemberId, kMooc2.id) }
+                .isInstanceOf(RestApiException::class.java)
+                .hasFieldOrPropertyWithValue("exceptionCode", COURSE_TYPE_LIMIT_EXCEEDED)
+        }
+
+        @Test
+        fun 일반_과목은_타입_제한이_없다() {
+            //given
+            // 일반 과목 여러 개 추가
+            for (i in 0 until 5) {
+                val course = CourseFixture.createCourseWithDetails(
+                    "과목$i", "Course$i", "CSE30$i", "CSE30${i}001",
+                    CourseGrade.SOPHOMORE,
+                )
+                courseRepository.save(course)
+
+                val member = memberRepository.findById(testMemberId).orElseThrow()
+                val cart = CartFixture.createCart(member, course)
+                cartRepository.save(cart)
+            }
+
+            //when
+            cartService.addCart(testMemberId, course1Id)
+
+            //then
+            val carts = cartRepository.findByMemberId(testMemberId)
+            assertThat(carts).hasSize(6)
+        }
+    }
+
+    @Nested
+    inner class 폐강_강의_담기_테스트 {
+        private var testMemberId = 0L
+        private var closedCourseId = 0L
+
+        @BeforeEach
+        fun setUp() {
+            val member = MemberFixture.createMember()
+            memberRepository.save(member)
+            testMemberId = member.id
+
+            val closedCourse = CourseFixture.createCourse()
+            closedCourse.close()
+            courseRepository.save(closedCourse)
+            closedCourseId = closedCourse.id
+        }
+
+        @Test
+        fun 폐강된_강의는_담을_수_없다() {
+            //when & then
+            assertThatThrownBy { cartService.addCart(testMemberId, closedCourseId) }
+                .isInstanceOf(RestApiException::class.java)
+                .hasFieldOrPropertyWithValue("exceptionCode", COURSE_CLOSED)
+        }
+
+        @Test
+        fun 폐강된_강의는_장바구니에_담기지_않는다() {
+            //when
+            assertThatThrownBy { cartService.addCart(testMemberId, closedCourseId) }
+                .isInstanceOf(RestApiException::class.java)
+
+            //then
+            assertThat(cartRepository.findByMemberId(testMemberId)).isEmpty()
+        }
+
+        @Test
+        fun 이미_담은_강의가_폐강돼도_삭제할_수_있다() {
+            //given
+            val course = CourseFixture.createCourseWithDetails(
+                "운영체제", "Operating System", "CSE3010", "CSE3010001", CourseGrade.JUNIOR,
+            )
+            courseRepository.save(course)
+            cartService.addCart(testMemberId, course.id)
+
+            // addCart의 카운터 갱신은 벌크 UPDATE라 영속성 컨텍스트에 반영되지 않는다.
+            // 새로고침 없이 course를 저장하면 더티 체킹이 낡은 cart_count로 덮어쓴다.
+            entityManager.refresh(course)
+
+            course.close()
+            courseRepository.save(course)
+
+            //when
+            cartService.deleteCartedCourse(testMemberId, course.id)
+
+            //then
+            assertThat(cartRepository.findByMemberIdAndCourseId(testMemberId, course.id)).isNull()
+        }
+    }
+
+    @Nested
+    inner class 담기_수_카운터_테스트 {
+        private var testMemberId = 0L
+        private var otherMemberId = 0L
+        private var courseId = 0L
+
+        @BeforeEach
+        fun setUp() {
+            val testMember = MemberFixture.createMember()
+            val otherMember = MemberFixture.createMember()
+            memberRepository.saveAll(listOf(testMember, otherMember))
+            testMemberId = testMember.id
+            otherMemberId = otherMember.id
+
+            val course = CourseFixture.createCourseWithDetails(
+                "자료구조", "Data Structure", "CSE101", "CSE101001", CourseGrade.SOPHOMORE,
+            )
+            courseRepository.save(course)
+            courseId = course.id
+        }
+
+        // 카운터 갱신은 벌크 UPDATE라 영속성 컨텍스트를 거치지 않는다.
+        // 컨텍스트를 비우고 다시 읽어야 DB에 실제로 반영된 값을 본다.
+        private fun cartCountOf(id: Long): Int {
+            entityManager.flush()
+            entityManager.clear()
+
+            return courseRepository.findById(id).orElseThrow().cartCount
+        }
+
+        @Test
+        fun 장바구니에_담으면_담기_수가_1_올라간다() {
+            //given
+            assertThat(cartCountOf(courseId)).isZero()
+
+            //when
+            cartService.addCart(testMemberId, courseId)
+
+            //then
+            assertThat(cartCountOf(courseId)).isEqualTo(1)
+        }
+
+        @Test
+        fun 여러_회원이_같은_강의를_담으면_담기_수가_누적된다() {
+            //given
+
+            //when
+            cartService.addCart(testMemberId, courseId)
+            cartService.addCart(otherMemberId, courseId)
+
+            //then
+            assertThat(cartCountOf(courseId)).isEqualTo(2)
+        }
+
+        @Test
+        fun 장바구니에서_빼면_담기_수가_1_내려간다() {
+            //given
+            cartService.addCart(testMemberId, courseId)
+            cartService.addCart(otherMemberId, courseId)
+
+            //when
+            cartService.deleteCartedCourse(testMemberId, courseId)
+
+            //then
+            assertThat(cartCountOf(courseId)).isEqualTo(1)
+        }
+
+        @Test
+        fun 담았다_빼면_담기_수가_원래대로_돌아온다() {
+            //given
+
+            //when
+            cartService.addCart(testMemberId, courseId)
+            cartService.deleteCartedCourse(testMemberId, courseId)
+
+            //then
+            assertThat(cartCountOf(courseId)).isZero()
+        }
+
+        @Test
+        fun 다른_회원이_뺀_것은_내_담기_수에_영향을_주지_않는다() {
+            //given
+            cartService.addCart(testMemberId, courseId)
+            cartService.addCart(otherMemberId, courseId)
+
+            //when
+            cartService.deleteCartedCourse(otherMemberId, courseId)
+
+            //then
+            assertThat(cartCountOf(courseId)).isEqualTo(1)
+            assertThat(cartRepository.findByMemberIdAndCourseId(testMemberId, courseId)).isNotNull()
+        }
+
+        @Test
+        fun 담기_수가_실제_담긴_행과_어긋나면_삭제_시_예외가_발생한다() {
+            //given
+            cartService.addCart(testMemberId, courseId)
+            // 담기 행은 그대로 두고 카운터만 0으로 되돌려 어긋난 상태를 만든다
+            courseRepository.decreaseCartCountAboveZero(courseId)
+
+            //when & then
+            assertThatThrownBy { cartService.deleteCartedCourse(testMemberId, courseId) }
+                .isInstanceOf(RestApiException::class.java)
+                .hasFieldOrPropertyWithValue("exceptionCode", CARTED_COURSE_DELETE_CONFLICT)
+        }
+
+        @Test
+        fun 담기_수가_어긋나_삭제에_실패하면_담기_행도_남는다() {
+            //given
+            cartService.addCart(testMemberId, courseId)
+            courseRepository.decreaseCartCountAboveZero(courseId)
+
+            //when
+            assertThatThrownBy { cartService.deleteCartedCourse(testMemberId, courseId) }
+                .isInstanceOf(RestApiException::class.java)
+
+            //then
+            assertThat(cartRepository.findByMemberIdAndCourseId(testMemberId, courseId)).isNotNull()
+        }
+
+        @Test
+        fun 갱신된_담기_수가_장바구니_조회_응답에_실린다() {
+            //given
+            cartService.addCart(testMemberId, courseId)
+            cartService.addCart(otherMemberId, courseId)
+            entityManager.flush()
+            entityManager.clear()
+
+            //when
+            val response = cartService.getCartedCourse(testMemberId)
+
+            //then
+            assertThat(response.courseResponses)
+                .singleElement()
+                .extracting<Int> { it.cartCount }
+                .isEqualTo(2)
+        }
+    }
+}

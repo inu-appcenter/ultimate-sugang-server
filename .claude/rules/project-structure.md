@@ -2,6 +2,8 @@
 description: 프로젝트 디렉토리 구조. 새 파일을 생성하거나 패키지 위치를 결정할 때 참조
 paths:
   - "src/main/java/**/*.java"
+  - "src/main/kotlin/**/*.kt"
+  - "kotlin-reference/**/*.kt"
 ---
 
 # 프로젝트 구조
@@ -16,6 +18,8 @@ src/main/java/uss/code/
 ├── cart/                # 장바구니
 └── registration/       # 수강신청 (신청/취소/조회)
 ```
+
+Kotlin으로 옮긴 파일은 `src/main/kotlin/uss/code/` 아래 같은 패키지 경로에 둔다.
 
 ## 도메인 패키지 내부 구조
 
@@ -33,8 +37,10 @@ src/main/java/uss/code/
 ├── dto/
 │   ├── request/
 │   ├── response/
-│   └── common/                       # 공용·projection record (선택, 예: cart/dto/common/CartCount)
+│   └── internal/                     # 공용·projection·캐시 DTO (선택). 이름은 `~Dto` (예: course/dto/internal/CachedCourseDto)
 └── infra/                            # 도메인 전용 검증/헬퍼 (선택, 예: CourseValidator)
 ```
 
 레이어 흐름은 **Controller → Service → Repository**다 (Facade 레이어 없음). 필요할 때만 `infra/`에 도메인 보조 로직을 둔다.
+
+Java에 남아 있는 DTO는 아직 `dto/common/`에 원래 이름으로 있다. Kotlin으로 옮기는 단위에서 `dto/internal/`로 옮기고 `~Dto`를 붙인다.

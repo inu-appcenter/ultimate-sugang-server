@@ -45,12 +45,6 @@ security:
     access-token-expiration-time: 86400000
     admin-access-token-expiration-time: 86400000
 
-inu:
-  course-api:
-    base-url: http://localhost/unused-in-conc-profile
-    auth-key: unused
-    mod-date: "20260101"
-
 management:
   server:
     port: 8081

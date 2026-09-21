@@ -4,7 +4,6 @@ import uss.code.course.domain.Course
 import uss.code.course.dto.internal.CachedCourseDto
 import uss.code.course.dto.internal.CourseCapacityDto
 
-@JvmRecord
 data class CourseResponse(
     val id: String,
 

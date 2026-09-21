@@ -4,7 +4,6 @@ import uss.code.course.domain.Course
 import uss.code.course.domain.CourseType
 import uss.code.course.infra.CourseScheduleFormatter
 
-@JvmRecord
 data class CachedCourseDto(
     val id: Long,
     val code: String,

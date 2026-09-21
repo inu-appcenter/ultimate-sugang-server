@@ -283,7 +283,9 @@ class CourseDepartmentTest {
         @Test
         fun 폐지된_학과는_목록에_없지만_소속_매핑에는_남는다() {
             //when & then
-            assertThat(CourseDepartment.departmentValues()).doesNotContain(CourseDepartment.TRADE)
+            assertThat(CourseDepartment.departmentValues())
+                .isNotEmpty()
+                .doesNotContain(CourseDepartment.TRADE)
             assertThat(CourseDepartment.ownedBy(MemberDepartment.GLOBAL_TRADE_SERVICE))
                 .contains(CourseDepartment.TRADE)
         }

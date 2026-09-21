@@ -1180,6 +1180,7 @@ class RegistrationServiceTest(
 
             //then
             assertThat(response.registrationCourseResponses)
+                .isNotEmpty()
                 .allSatisfy { registration ->
                     assertThat(registration.studentId).isEqualTo(testMember.studentId)
                     assertThat(registration.reAttendance).isEmpty()

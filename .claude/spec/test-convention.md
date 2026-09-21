@@ -55,6 +55,9 @@ class CartServiceTest(
 - 컬렉션 요소를 뽑아 검증할 때는 `extracting`에 타입 인자와 람다를 쓴다 (`.extracting<String> { it.code }`)
   - `extracting(CourseResponse::code)`처럼 참조를 넘기면 튜플을 돌려주는 가변 인자 오버로드로 잡혀 컴파일되지 않는다
 - 여러 값을 튜플로 뽑을 때는 프로퍼티 참조를 넘긴다 (`.extracting(CourseResponse::code, CourseResponse::name)`). 위의 가변 인자 오버로드가 그대로 쓰인다
+- `doesNotContain`, `allSatisfy`처럼 대상이 비면 아무것도 검사하지 않고 통과하는 단언은 앞에 `isNotEmpty()`를 둔다 (`.extracting<String> { it.code }.isNotEmpty().doesNotContain("X")`)
+  - 앞에 `hasSize`, `contains`, `containsExactly`가 이미 있으면 빈 목록에서 실패하므로 따로 넣지 않는다
+  - Kotlin 분석기에는 이를 잡는 SonarQube 규칙(`java:S5841`)이 없다
 - 목록에서 요소 하나를 찾을 때는 `first { it.courseCode == "CSE101" }`를 쓴다
 - 반드시 있어야 하는 저장 결과를 다시 읽을 때는 `findById(id).orElseThrow()`를, nullable을 돌려주는 조회는 `checkNotNull(...)`을 쓴다. `!!`를 쓰지 마라
   - `require()`/`check()` 금지는 응답 코드가 500으로 떨어지는 비즈니스 검증에 대한 규칙이라 테스트의 전제 확인에는 해당하지 않는다

@@ -15,6 +15,7 @@ Java 컨벤션(`../java/domain.md`)의 DB 매핑 규칙(`@Table`, `@Column(name 
 - 일반 `class`로 선언하라. `data class`를 쓰지 마라 (자동 생성되는 `equals`/`hashCode`/`toString`이 지연 로딩 연관관계까지 건드린다)
 - JPA용 기본 생성자는 `kotlin-jpa` 플러그인이, 프록시용 `open`은 `allOpen` 설정이 만든다. 코드에 직접 쓰지 마라
 - 생성자는 `private constructor`로 감추고 `companion object`의 `create()`로만 생성하라
+  - `create()`는 값을 개별 파라미터로 받는다. 파라미터가 많아도 파라미터 객체로 묶지 않는다 (호출은 이름 붙인 인자라 위치가 섞이지 않는다. SonarQube `kotlin:S107`은 이 이유로 두었다)
 - 주 생성자 파라미터는 프로퍼티(`val`/`var`)로 선언하지 말고 값만 받아라. 영속 필드는 클래스 본문에 선언한다 (생성자 프로퍼티에는 `protected set`을 지정할 수 없다)
 
 ## 영속 필드

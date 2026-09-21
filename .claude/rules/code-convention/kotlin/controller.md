@@ -62,6 +62,7 @@ class CartController(
 
 ## Docs 인터페이스
 
+- 함수가 하나여도 `fun interface`로 선언하지 마라. 컨트롤러 클래스가 구현하고 springdoc이 어노테이션을 읽는 용도라 람다로 구현할 일이 없다 (SonarQube `kotlin:S6517`은 이 이유로 두었다)
 - 배열 인자는 `[...]`로, 중첩 어노테이션은 `@` 없이 작성하라
 - 클래스 참조는 `ErrorResponse::class`로 작성하라
 - 어노테이션 인자는 컴파일 타임 상수여야 한다. 긴 설명은 `+`로 이어 붙이고 `trimIndent()` 같은 함수 호출을 쓰지 마라

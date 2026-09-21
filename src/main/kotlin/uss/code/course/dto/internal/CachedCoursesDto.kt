@@ -1,6 +1,5 @@
 package uss.code.course.dto.internal
 
-@JvmRecord
 data class CachedCoursesDto(
     val courses: List<CachedCourseDto>,
 ) {

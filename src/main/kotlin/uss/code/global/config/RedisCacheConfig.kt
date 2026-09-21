@@ -12,13 +12,16 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair
+import tools.jackson.databind.ObjectMapper
 import uss.code.course.dto.internal.CachedCoursesDto
 import uss.code.course.infra.CourseCacheLoader
 import uss.code.global.exception.handler.CacheExceptionHandler
 
 @Configuration
 @EnableCaching
-class RedisCacheConfig : CachingConfigurer {
+class RedisCacheConfig(
+    private val objectMapper: ObjectMapper,
+) : CachingConfigurer {
     override fun errorHandler(): CacheErrorHandler {
         return CacheExceptionHandler()
     }
@@ -29,7 +32,12 @@ class RedisCacheConfig : CachingConfigurer {
             builder.withCacheConfiguration(
                 CourseCacheLoader.MAJOR_COURSES,
                 builder.cacheDefaults().serializeValuesWith(
-                    SerializationPair.fromSerializer(JacksonJsonRedisSerializer(CachedCoursesDto::class.java)),
+                    SerializationPair.fromSerializer(
+                        JacksonJsonRedisSerializer(
+                            objectMapper,
+                            CachedCoursesDto::class.java,
+                        ),
+                    ),
                 ),
             )
         }
@@ -41,7 +49,12 @@ class RedisCacheConfig : CachingConfigurer {
             builder.withCacheConfiguration(
                 CourseCacheLoader.GENERAL_EDUCATION_COURSES,
                 builder.cacheDefaults().serializeValuesWith(
-                    SerializationPair.fromSerializer(JacksonJsonRedisSerializer(CachedCoursesDto::class.java)),
+                    SerializationPair.fromSerializer(
+                        JacksonJsonRedisSerializer(
+                            objectMapper,
+                            CachedCoursesDto::class.java,
+                        ),
+                    ),
                 ),
             )
         }

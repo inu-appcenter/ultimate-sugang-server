@@ -1,6 +1,7 @@
 package uss.code.course.infra
 
 import uss.code.course.domain.Course
+import uss.code.course.domain.CourseSchedule
 import uss.code.course.domain.CourseType.K_MOOC
 import uss.code.course.domain.CourseType.OCU
 import uss.code.member.domain.Member
@@ -19,14 +20,14 @@ object CourseValidator {
             return true
         }
 
-        val newCourseSchedules = newCourse.schedules
+        val newCourseSchedules: List<CourseSchedule> = newCourse.schedules
 
         if (newCourseSchedules.isEmpty()) {
             return true
         }
 
         for (existingCourse in existingCourses) {
-            val existingCourseSchedules = existingCourse.schedules
+            val existingCourseSchedules: List<CourseSchedule> = existingCourse.schedules
 
             for (newSchedule in newCourseSchedules) {
                 val newCourseDay = newSchedule.dayOfWeek

@@ -93,9 +93,9 @@ class JwtProvider(
 
     private fun extractRole(accessToken: String?): String? {
         return try {
-            parseJwt(accessToken).payload.get(ROLE_CLAIM, String::class.java)
+            parseJwt(accessToken).payload[ROLE_CLAIM, String::class.java]
         } catch (e: ExpiredJwtException) {
-            e.claims.get(ROLE_CLAIM, String::class.java)
+            e.claims[ROLE_CLAIM, String::class.java]
         }
     }
 

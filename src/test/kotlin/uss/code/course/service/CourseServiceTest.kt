@@ -190,6 +190,7 @@ class CourseServiceTest(
             //then
             assertThat(response.courseResponses)
                 .extracting<String> { it.courseCode }
+                .isNotEmpty()
                 .doesNotContain("MATH101")
         }
 
@@ -309,6 +310,7 @@ class CourseServiceTest(
             //then
             assertThat(response.courseResponses)
                 .extracting<String> { it.courseCode }
+                .isNotEmpty()
                 .doesNotContain("LIF101")
         }
 
@@ -598,6 +600,7 @@ class CourseServiceTest(
             //then
             assertThat(response.courseResponses)
                 .extracting<String> { it.courseCode }
+                .isNotEmpty()
                 .doesNotContain("COM101")
         }
 
@@ -781,6 +784,7 @@ class CourseServiceTest(
             //then
             assertThat(response.courseResponses)
                 .extracting<String> { it.courseCode }
+                .isNotEmpty()
                 .doesNotContain("CSE101")
         }
 
@@ -1040,6 +1044,7 @@ class CourseServiceTest(
             //then
             assertThat(response.courseResponses)
                 .extracting<String> { it.courseCode }
+                .isNotEmpty()
                 .doesNotContain("FA101")
         }
 
@@ -1054,6 +1059,7 @@ class CourseServiceTest(
             //then
             assertThat(response.courseResponses)
                 .extracting<String> { it.courseCode }
+                .isNotEmpty()
                 .doesNotContain("CSE101")
         }
 
@@ -1295,6 +1301,7 @@ class CourseServiceTest(
             //then
             assertThat(response.interdisciplinaryMajorResponses)
                 .extracting<String> { it.name }
+                .isNotEmpty()
                 .doesNotContain("수학과", "교양", "HUSS(타대학)")
         }
     }
@@ -1533,6 +1540,7 @@ class CourseServiceTest(
             //then
             assertThat(response.departmentResponses)
                 .extracting<String> { it.name }
+                .isNotEmpty()
                 .doesNotContain("교양", "교직", "일선", "군사학")
         }
 
@@ -1546,6 +1554,7 @@ class CourseServiceTest(
             //then
             assertThat(response.departmentResponses)
                 .extracting<String> { it.name }
+                .isNotEmpty()
                 .doesNotContain("물류학전공(연계)", "항체공학연계전공")
         }
 
@@ -1559,6 +1568,7 @@ class CourseServiceTest(
             //then
             assertThat(response.departmentResponses)
                 .extracting<String> { it.code }
+                .isNotEmpty()
                 .doesNotContain("TRADE")
         }
 

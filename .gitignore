@@ -42,11 +42,8 @@ CLAUDE.md
 !.claude/CLAUDE.md
 TASKS.md
 
-# 성능 측정용 실 JWT. 커밋하지 않는다.
-.claude/resources/perf/**/tokens.json
-
-# 동시성 측정용 JWT. 로컬 서명키로 만든 것이지만 커밋하지 않는다.
-.claude/resources/concurrency/**/tokens.json
+# 하네스 작업 산출물(계획서, 측정 기록, 토큰)은 로컬에서만 관리한다
+/.claude/resources/
 
 # 학교 연계 API 원본 응답 덤프. 용량이 크고 레포가 public이라 커밋하지 않는다.
 .local/
@@ -61,6 +58,3 @@ kotlin-reference/
 
 # Kotlin 학습 노트 (개인용)
 /NOTE.md
-
-# Kotlin 마이그레이션 진행 기록 (로컬 작업용)
-.claude/resources/kotlin-migration/TODO.md

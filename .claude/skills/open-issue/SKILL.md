@@ -1,103 +1,63 @@
 ---
 name: open-issue
 description: |
-  작업을 대화로 구체화한 뒤 종류에 맞는 GitHub 이슈를 열고, 연결된 작업 브랜치를 생성·체크아웃한다.
+  작업을 대화로 구체화해 GitHub 이슈를 열고, 연결된 작업 브랜치를 만들어 체크아웃한다.
   Trigger: "이슈 열어줘", "이거 작업 시작하자", "새 작업 시작하자", "기능/버그/리팩토링 이슈 만들어줘"
-  Do NOT use for: 작업 계획 수립(→ write-plan), 구현(→ implement), 이미 열린 이슈에 브랜치만 파는 경우(직접 git)
-  Boundary: 이슈 생성과 브랜치 생성·체크아웃까지만 수행한다. 작업 계획과 구현은 이 스킬 범위 밖이다.
-allowed-tools: Read, Grep, Glob, Bash
+  Do NOT use for: 계획 수립(→ write-plan), 구현(→ implement), PR 생성(→ open-pr), 이미 열린 이슈에 브랜치만 만드는 경우(직접 git)
+  Boundary: 이슈 생성과 브랜치 생성, 체크아웃까지만 한다.
+argument-hint: "[작업 설명]"
+allowed-tools: Read, Write, AskUserQuestion, Bash(git *), Bash(gh *)
 model: sonnet
-effort: xhigh
+effort: medium
 ---
 
-# 작업 발의 (이슈 + 브랜치)
+## 작업 발의 (이슈 + 브랜치)
 
-본 스킬은 '무엇을'과 '왜'를 담은 Github 이슈를 열며, 해당 이슈에 대한 작업 브랜치를 생성한다.
-'어떻게(구현)'은 본 스킬에서 담당하지 않는다.
+이슈는 두 가지만 담는다. 어떤 이슈가 있었는가(`## Issue`), 어떻게 작업하려고 하는가(`## Plan`).
 
-작업은 기능 구현(feat), 수정(fix), 리펙토링(refactor), 긴급 수정(hotfix), 문서화(docs),
-테스트 관련(test), CI/CD(cicd), 기타(chore), 분석(analysis)으로 분류되며 작업 종류를 먼저 판별한 뒤, 그에 맞는
-템플릿, 라벨, 브랜치 접두사를 사용한다.
+### Phase 1: 작업 구체화
 
-## Phase 1: 작업 구체화 (대화)
+$ARGUMENTS가 비었거나 모호하면 대화로 아래를 확정한다. 여러 작업이 섞여 있으면 이슈를 나누고 작업마다 Phase 1~3을 반복한다.
 
-** $ARGUMENTS가 애마하다고 판단되면, 사용자와의 대화로 구체화한 뒤 이슈를 생성하라 **
+- **종류**: `.claude/spec/git-convention.md` 커밋 타입 표의 type 하나
+- **제목**: git-convention 제목 규칙(40자 이내 명사형, 대상 나열 금지)
+- **Issue**: 지금 무엇이 어떻게 되고 있고, 그래서 무엇이 잘못되거나 불편한지
+- **Plan**: 무엇을 어떻게 바꿀지 2~5개, 이번에 하지 않을 것
+- **slug**: 브랜치용 영문 kebab-case (예: `registration-queue`)
 
-1. $ARGUMENTS는 기능에 대한 명세이다. 비어있다면 사용자에게 어떤 작업을 할 지 물어보고 작업을 구체화하라.
-2. $ARGUMENTS가 모호하다면, 사용자와의 인터렉션을 통해 아래 3가지 요소를 구체화하라
-   - 정확히 무엇을(동작, 범위, 경계)
-   - 왜(배경, 문제 상황)
-   - 제약사항(있는 경우에)
-3. 아래 네 요소가 확정되면 다음 Phase로 이동하라
-   - 종류: feat / fix / refactor / hotfix / docs / test / cicd / chore / analysis 중 하나
-   - 제목: 작업을 한 줄로 표현하는 명사형.
-     `.claude/spec/git-convention.md`의 제목 규칙을 따른다 - 40자 이내, 클래스명 나열과 괄호 중첩 금지,
-     대상을 나열하지 말고 무엇을 해결하는지를 남긴다.
-   - 설명: 이 작업이 왜 필요한지 1~3문장
-   - 작업 항목: 체크리스트로 쪼갠 하위 작업 목록
+> 다음 Phase 조건: 다섯 요소가 정해졌을 때
 
-> 다음 Phase 조건: 종류, 제목, 설명, 작업 항목이 사용자와 함께 확정되었을 때
+### Phase 2: 본문 작성
 
-> Skip 조건: 없음 (필수 Phase)
+1. `.github/ISSUE_TEMPLATE/issue.md`를 Read해 frontmatter 아래 두 구획을 그대로 쓴다. HTML 주석은 넣지 않는다
+2. 구조, 분량, 말투는 `template/example.md`를 따른다
+   - Issue: 관찰한 사실과 그 영향만 2~4문장. 해결책, 원인 추정, 배경 설명을 늘어놓지 않는다. 근거(경로, 링크)는 마지막에 `> [!NOTE]` 콜아웃
+   - Plan: `- [ ]` 체크리스트. "무엇을 어떻게"를 쓰고 클래스, 메서드 이름을 나열하지 않는다. 하지 않을 것은 목록 뒤에 `> [!IMPORTANT]` 콜아웃(`하지 않는다: ...`)
+   - 문단, 콜아웃, 구획 사이에는 `<br>`을 한 줄 둔다. 목록 항목 사이에는 두지 않는다
+   - 두 구획 밖의 내용(관련 도메인 체크, 기대 효과, 일정)을 더하지 않는다
+3. 제목과 본문은 git-convention 표기 규칙(가운데점 대신 콤마, 긴 대시 대신 짧은 대시)을 지킨다
+4. 본문은 세션 스크래치패드에 파일로 저장한다(`--body-file`로 넘겨 셸 이스케이프 사고를 막는다)
 
-## Phase 2: 이슈 본문 작성
+### Phase 3: 이슈, 브랜치 생성
 
-1. 종류별 title 접두사·이슈 라벨·브랜치 접두사는 `.claude/spec/git-convention.md`의 커밋 타입 표를 참조하라 (접두사 `{종류}:`, 브랜치 `{종류}/`, 라벨은 표의 이슈 라벨).
-   이슈 본문 템플릿은 다음을 쓴다:
-   - `.github/ISSUE_TEMPLATE/{종류}-issue-template.md`가 있으면 Read해서 본문 구조를 그대로 따른다.
-   - 전용 템플릿이 없는 종류(cicd, chore, analysis)는 `feat-issue-template.md`의 본문 구조를 재사용한다.
-2. Phase 1 결과를 template 규격에 맞춰 본문으로 구성하라. 템플릿의 구획은 세 개다:
-   - 이슈 내용: 설명. 문제가 여러 개면 번호를 붙여 나눈다
-   - 작업 내용: 작업 항목을 `- [ ] {작업명}` 체크리스트로. 갈래가 여러 개면 굵은 소제목으로 묶는다
-   - 첨부 파일: 근거가 되는 파일 경로, 로그, 링크. 없으면 구획 제목만 두고 비운다
-3. 제목과 본문 모두 `.claude/spec/git-convention.md`의 표기 규칙을 따른다 (가운데점 대신 콤마, 긴 대시 대신 짧은 대시).
-4. 본문을 스크래치 파일에 저장해두면 `gh` 전달이 안전하다 (`--body-file`로 넘김).
+1. 이슈를 만든다. 라벨은 git-convention 커밋 타입 표의 이슈 라벨이다. 출력 URL에서 이슈 번호를 얻는다
 
-> 다음 Phase 조건: template 규격에 맞는 본문과 라벨이 준비되었을 때
-
-> Skip 조건: 없음 (필수 Phase)
-
-## Phase 3: 이슈 생성
-
-1. 아래 명령으로 이슈를 생성하라 (title 접두사·라벨은 `.claude/spec/git-convention.md`의 커밋 타입 표를 참조하라):
    ```bash
-   gh issue create --title "{접두}: {제목}" --body-file {본문파일} --label "{라벨}" --assignee @me
+   gh issue create --title "{type}: {제목}" --body-file {본문 파일} --label "{라벨}" --assignee @me
    ```
-   - 담당자는 항상 호출자 본인(`@me`)이다. 이슈 템플릿 frontmatter에는 담당자를 고정하지 않는다
-     (웹 UI로 이슈를 여는 다른 사람에게 잘못 배정된다).
-   - 라벨 이름은 표의 표기 그대로다. 실패하면 `gh label list`로 실제 이름을 확인하라.
-2. 출력된 이슈 URL에서 이슈 번호를 파싱하라 (다음 Phase에서 브랜치명에 사용).
 
-> 다음 Phase 조건: 이슈가 생성되고 번호를 확보했을 때
+   - 라벨 지정이 실패하면 `gh label list`로 실제 이름을 확인한다
+2. git-convention 브랜치 전략의 base(지금 `dev`)에서 `{type}/{번호}-{slug}` 브랜치를 만든다
 
-> Skip 조건: 없음 (필수 Phase)
-
-## Phase 4: 브랜치 생성·체크아웃
-
-1. 브랜치 컨벤션(`.claude/spec/git-convention.md`)을 따른다:
-   `{종류}/{이슈번호}-{slug}` - 종류는 Phase 1에서 정한 타입, slug은 영문 kebab-case 간단 설명.
-   - 예: fix 이슈 #420 "로그인 리다이렉트 오류" → `fix/420-login-redirect`
-2. 개발 브랜치는 `dev`에서 분기한다 (컨벤션: main → dev → 개발 브랜치).
-   최신 dev를 받아 브랜치를 만들어라:
    ```bash
-   git fetch origin dev
-   git checkout -b {종류}/{이슈번호}-{slug} origin/dev
-   ```
-   - `origin/dev`가 없으면 `origin/main`을 base로 사용하고, 이 사실을 보고에 명시하라.
-   - 단, hotfix는 성격상 base가 다를 수 있으니 base 브랜치를 사용자에게 확인하라.
-3. 브랜치를 원격에 반영하고 upstream을 정정하라:
-   ```bash
+   git fetch origin {base}
+   git checkout -b {type}/{번호}-{slug} origin/{base}
    git push -u origin HEAD
    ```
-   - `git checkout -b ... origin/dev`는 upstream을 `origin/dev`로 잡아, 이후 `git push`가 브랜치명 불일치로 실패하고 브랜치가 원격에 없다. `-u origin HEAD`로 동일명 원격 브랜치를 만들고 upstream을 그쪽으로 재설정해 재발을 막는다.
 
-> 다음 Phase 조건: 새 브랜치로 체크아웃되고 원격에 push(-u)되었을 때
+   - hotfix처럼 base가 다를 수 있으면 사용자에게 base를 묻는다
+   - `git checkout -b ... origin/{base}`는 upstream을 `origin/{base}`로 잡는다. `-u origin HEAD`로 같은 이름의 원격 브랜치를 upstream으로 바로잡는다
 
-> Skip 조건: 없음 (필수 Phase)
+### Phase 4: 결과 보고
 
-## Phase 5: 결과 보고
-
-1. 보고 템플릿을 Read로 읽어라: `.claude/skills/open-issue/template/output.md`
-2. 템플릿 상단 작성 가이드에 따라 항목을 채워 보고하라. (가이드 주석은 출력에 포함하지 않는다.)
-
-> Skip 조건: 없음 (필수 Phase)
+`template/output.md`를 Read해 채워 보고한다. 주석은 출력하지 않는다.

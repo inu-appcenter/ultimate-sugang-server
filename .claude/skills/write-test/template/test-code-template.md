@@ -1,6 +1,6 @@
-# 테스트 코드 템플릿
+## 테스트 코드 템플릿
 
-## 통합 테스트
+### 통합 테스트
 
 ```kotlin
 package uss.code.{domain}.service
@@ -52,7 +52,7 @@ class {Target}Test(
 }
 ```
 
-## Fixture (엔티티 팩토리)
+### Fixture (엔티티 팩토리)
 
 ```kotlin
 package uss.code.{domain}.fixture

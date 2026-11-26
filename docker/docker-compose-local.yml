@@ -8,8 +8,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: uss_db
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
       TZ: Asia/Seoul
     ports:
       - "3307:3306"

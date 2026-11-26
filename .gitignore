@@ -48,7 +48,8 @@ TASKS.md
 # 학교 연계 API 원본 응답 덤프. 용량이 크고 레포가 public이라 커밋하지 않는다.
 .local/
 
-docs/roadmap.md
+# 메시징 학습 로드맵 (단계별 프롬프트, 기록, 실험 도구. 로컬 전용)
+/docs/
 
 # 백오피스 명세 차이 정리 (공개 레포에 올리지 않는다)
 BACKOFFICE-API-DEVIATIONS.md
